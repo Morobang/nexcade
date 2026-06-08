@@ -56,7 +56,7 @@ CREATE TABLE public.profiles (
   role public.user_role NOT NULL DEFAULT 'player',
   phone text,
   psn_id text,
-  home_arcade_id uuid REFERENCES public.arcades(id) ON DELETE SET NULL,
+  home_arcade_id uuid,
   avatar_url text,
   bio text,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -82,6 +82,10 @@ CREATE TABLE public.arcades (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_home_arcade_fkey FOREIGN KEY (home_arcade_id)
+  REFERENCES public.arcades(id) ON DELETE SET NULL;
 
 -- Tournaments table
 CREATE TABLE public.tournaments (

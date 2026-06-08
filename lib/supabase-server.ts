@@ -7,4 +7,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in environment variables.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const serverSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+  },
+});

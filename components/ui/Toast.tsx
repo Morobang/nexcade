@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, createContext, useContext, ReactNode } from 'react';
+import { CheckCircle, XCircle, Info, AlertTriangle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
@@ -80,11 +81,13 @@ function ToastMessage({ toast, onClose }: ToastMessageProps) {
   };
 
   const icons = {
-    success: '✅',
-    error: '❌',
-    info: 'ℹ️',
-    warning: '⚠️',
+    success: CheckCircle,
+    error: XCircle,
+    info: Info,
+    warning: AlertTriangle,
   };
+
+  const Icon = icons[toast.type];
 
   return (
     <div
@@ -93,10 +96,10 @@ function ToastMessage({ toast, onClose }: ToastMessageProps) {
         variants[toast.type]
       )}
     >
-      <span>{icons[toast.type]}</span>
+      <Icon className="w-5 h-5 shrink-0" />
       <p className="flex-1 text-sm font-medium">{toast.message}</p>
-      <button onClick={onClose} className="text-lg leading-none opacity-70 hover:opacity-100">
-        ✕
+      <button onClick={onClose} className="opacity-70 hover:opacity-100">
+        <X className="w-4 h-4" />
       </button>
     </div>
   );

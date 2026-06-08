@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { CircleDot, CircleX, Radio, CircleCheck, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BadgeProps {
@@ -21,16 +22,18 @@ export function Badge({ variant = 'open', children, className }: BadgeProps) {
   };
 
   const icons = {
-    open: '🟢',
-    full: '🔴',
-    live: '🔴',
-    done: '✅',
-    stream: '📹',
+    open: CircleDot,
+    full: CircleX,
+    live: Radio,
+    done: CircleCheck,
+    stream: Video,
   };
+
+  const Icon = icons[variant];
 
   return (
     <span className={cn(baseStyles, variants[variant], className)}>
-      <span>{icons[variant]}</span>
+      <Icon className="w-3 h-3" />
       {children}
     </span>
   );

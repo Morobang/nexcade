@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ModalProps {
@@ -36,10 +37,10 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           {title && <h2 className="text-xl font-bold text-white">{title}</h2>}
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 text-2xl leading-none"
+            className="text-zinc-400 hover:text-zinc-200"
             aria-label="Close modal"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 

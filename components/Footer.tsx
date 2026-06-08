@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Flame } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -103,7 +104,7 @@ export function Footer() {
             © 2026 NexCade. All rights reserved.
           </p>
           <p className="text-zinc-500 text-sm">
-            Made with 🔥 by South Africa's fighting game community
+            Made with <Flame className="w-4 h-4 text-red-500 inline-block" /> by South Africa's fighting game community
           </p>
         </div>
       </div>

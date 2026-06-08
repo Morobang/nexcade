@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -41,7 +42,7 @@ export function Button({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && <span className="animate-spin">⏳</span>}
+      {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
       {children}
     </button>
   );

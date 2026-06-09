@@ -43,14 +43,30 @@ export async function generateMetadata(
   const { slug } = await params;
   const { data } = await serverSupabase
     .from('arcades')
-    .select('name, city')
+    .select('name, city, description')
     .eq('slug', slug)
     .single();
 
   if (!data) return { title: 'Arcade Not Found' };
+
+  const title = `${data.name} — ${data.city}`;
+  const description = (data as any).description
+    ?? `View tournaments and info for ${data.name} in ${data.city} on NexCade.`;
+
   return {
-    title: `${data.name} — ${data.city}`,
-    description: `View tournaments and info for ${data.name} in ${data.city} on NexCade.`,
+    title,
+    description,
+    openGraph: {
+      title: `${title} | NexCade`,
+      description,
+      url: `/arcades/${slug}`,
+      images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | NexCade`,
+      description,
+    },
   };
 }
 

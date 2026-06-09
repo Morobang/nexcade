@@ -62,6 +62,7 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
     { data: regData },
     { data: resultData },
     { data: seasonData },
+    { data: qualifierData },
   ] = await Promise.all([
     serverSupabase
       .from('registrations')
@@ -77,6 +78,11 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
       .from('season_points')
       .select('points, season, is_season_champion')
       .eq('profile_id', id),
+    serverSupabase
+      .from('results')
+      .select('placement, tournaments!inner(is_qualifier)')
+      .eq('profile_id', id)
+      .lte('placement', 2),
   ]);
 
   const registrations = regData ?? [];
@@ -89,6 +95,9 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
   const winRate = results.length > 0 ? Math.round((wins / results.length) * 100) : 0;
   const totalSeasonPoints = seasonRows.reduce((s, r) => s + r.points, 0);
   const isSeasonChampion = (seasonRows as any[]).some((r) => r.is_season_champion === true);
+  const isGrandFinalQualified = (qualifierData ?? []).some(
+    (r) => (r as any).tournaments?.is_qualifier === true
+  );
   const paidCount = registrations.filter((r) => r.payment_status === 'paid').length;
   const loyaltyProgress = paidCount % 3;
   const tier = getTier(totalEntered);
@@ -132,6 +141,14 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
               <Shield className="w-3 h-3" />
               {tier.label}
             </div>
+
+            {/* Grand Final qualifier badge */}
+            {isGrandFinalQualified && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border text-purple-400 border-purple-500/40 bg-purple-500/10">
+                <Shield className="w-3 h-3" />
+                Grand Final Qualified
+              </div>
+            )}
 
             {/* Season champion badge */}
             {isSeasonChampion && (

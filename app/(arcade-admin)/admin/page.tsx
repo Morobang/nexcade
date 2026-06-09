@@ -26,6 +26,7 @@ const QUICK_LINKS = [
   { href: '/admin/registrations',     icon: ListOrdered,   label: 'Registrations',      desc: 'Manage player sign-ups'       },
   { href: '/admin/revenue',           icon: TrendingUp,    label: 'Revenue',             desc: 'Track payments and earnings'  },
   { href: '/admin/stream',            icon: Tv,            label: 'Stream Controls',     desc: 'Go live and manage streams'   },
+  { href: '/admin/grand-final',         icon: Trophy,        label: 'Grand Final',         desc: 'Qualifier results & GF setup' },
   { href: '/admin/settings',           icon: Settings,      label: 'Arcade Profile',      desc: 'Edit your arcade details'     },
 ];
 

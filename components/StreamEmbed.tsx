@@ -24,10 +24,10 @@ function toEmbedUrl(url: string, hostname: string): string | null {
   try {
     const u = new URL(url);
     if (u.hostname.includes('youtube.com') && u.searchParams.get('v')) {
-      return `https://www.youtube.com/embed/${u.searchParams.get('v')}?autoplay=1&rel=0`;
+      return `https://www.youtube.com/embed/${u.searchParams.get('v')}?rel=0`;
     }
     if (u.hostname === 'youtu.be') {
-      return `https://www.youtube.com/embed${u.pathname}?autoplay=1&rel=0`;
+      return `https://www.youtube.com/embed${u.pathname}?rel=0`;
     }
     if (u.hostname.includes('twitch.tv')) {
       const channel = u.pathname.replace(/^\//, '');

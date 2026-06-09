@@ -41,9 +41,24 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { id } = await params;
   const { data } = await serverSupabase.from('profiles').select('gamer_tag, full_name').eq('id', id).single();
   if (!data) return { title: 'Player Not Found' };
+
+  const title = `${data.gamer_tag} — NexCade Profile`;
+  const description = `${data.full_name}'s NexCade tournament history, rankings, and stats.`;
+
   return {
-    title: `${data.gamer_tag} — NexCade Profile`,
-    description: `${data.full_name}'s public NexCade player profile.`,
+    title,
+    description,
+    openGraph: {
+      title: `${title} | NexCade`,
+      description,
+      url: `/profile/${id}`,
+      images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | NexCade`,
+      description,
+    },
   };
 }
 

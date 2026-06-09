@@ -57,13 +57,29 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { id: slug } = await params;
   const { data } = await serverSupabase
     .from('tournaments')
-    .select('name, game_type, arcades(city)')
+    .select('name, game_type, arcades(name, city)')
     .eq('slug', slug)
     .single();
   if (!data) return { title: 'Tournament Not Found' };
+
+  const arcade = (data as any).arcades as { name: string; city: string } | null;
+  const description = `${data.game_type} tournament${arcade ? ` at ${arcade.name}, ${arcade.city}` : ' in South Africa'}. Register and compete on NexCade.`;
+  const title = data.name;
+
   return {
-    title: data.name,
-    description: `${data.game_type} tournament at ${(data as any).arcades?.city ?? 'SA'}. Register on NexCade.`,
+    title,
+    description,
+    openGraph: {
+      title: `${title} | NexCade`,
+      description,
+      url: `/tournaments/${slug}`,
+      images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | NexCade`,
+      description,
+    },
   };
 }
 

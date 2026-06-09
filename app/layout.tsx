@@ -19,14 +19,36 @@ const barlow = Barlow({
   display: 'swap',
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://nexcade.co.za';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(APP_URL),
   title: {
     default: 'NexCade',
     template: '%s | NexCade',
   },
   description:
     "South Africa's gaming arcade tournament platform. Compete, rank up, and represent your arcade.",
-  keywords: ['gaming', 'tournaments', 'arcades', 'south africa', 'esports', 'tekken', 'street fighter'],
+  keywords: ['gaming', 'tournaments', 'arcades', 'south africa', 'esports', 'tekken', 'street fighter', 'FC26', 'Tekken 8'],
+  openGraph: {
+    type: 'website',
+    siteName: 'NexCade',
+    title: 'NexCade — SA Gaming Tournaments',
+    description: "South Africa's gaming arcade tournament platform. Compete, rank up, and represent your arcade.",
+    url: APP_URL,
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'NexCade' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NexCade — SA Gaming Tournaments',
+    description: "South Africa's gaming arcade tournament platform.",
+    images: ['/opengraph-image'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

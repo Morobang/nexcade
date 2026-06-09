@@ -23,10 +23,10 @@ VALUES
   ('00000000-0000-0000-0000-000000000007', 'Jaco van der Merwe', 'NeonBoss', 'arcade.owner2@nexcade.test', 'arcade_owner', '+27717778899', null, null, 'Owner of Neon Rift and streaming event host.');
 
 -- Demo arcades
-INSERT INTO public.arcades (id, owner_id, name, slug, city, address, description, contact_email, whatsapp_number, logo_url, cover_url, games_supported, console_setup, is_active)
+INSERT INTO public.arcades (id, owner_id, name, slug, city, address, description, contact_email, whatsapp_number, logo_url, cover_url, games_supported, console_setup, latitude, longitude, is_active)
 VALUES
-  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000006', 'Rocket Arena', 'rocket-arena', 'Cape Town', '10 Arcade Lane, Cape Town', 'South Africa''s premier fighting game arcade with nightly events.', 'hello@rocketarena.co.za', '+27718889900', null, null, ARRAY['FC26','Tekken8','SF6'], '4 PS5 stations with tournament seating and broadcast setup.', true),
-  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000007', 'Neon Rift', 'neon-rift', 'Johannesburg', '22 Victory Road, JHB', 'Competitive arcade hosting fresh SA tournaments and live streams.', 'info@neonrift.co.za', '+27719990011', null, null, ARRAY['MK1','KOFXV','Naruto'], '3 Xbox Series X booths plus a dedicated streaming desk.', true);
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000006', 'Rocket Arena', 'rocket-arena', 'Cape Town', '10 Arcade Lane, Cape Town', 'South Africa''s premier fighting game arcade with nightly events.', 'hello@rocketarena.co.za', '+27718889900', null, null, ARRAY['FC26','Tekken8','SF6'], '4 PS5 stations with tournament seating and broadcast setup.', -33.9249, 18.4241, true),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000007', 'Neon Rift', 'neon-rift', 'Johannesburg', '22 Victory Road, JHB', 'Competitive arcade hosting fresh SA tournaments and live streams.', 'info@neonrift.co.za', '+27719990011', null, null, ARRAY['MK1','KOFXV','Naruto'], '3 Xbox Series X booths plus a dedicated streaming desk.', -26.2041, 28.0473, true);
 
 -- Link home arcades for player profiles
 UPDATE public.profiles

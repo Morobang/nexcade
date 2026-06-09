@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -16,29 +18,33 @@ export function LoginForm() {
     e.preventDefault();
     setError('');
 
-    if (!email.trim()) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('Enter a valid email address.');
+    if (!email.trim() || !password) {
+      setError('Please enter your email and password.');
       return;
     }
 
     setSubmitting(true);
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
+      password,
     });
 
-    if (otpError) {
-      setError(otpError.message);
+    if (authError) {
+      setError('Incorrect email or password. Please try again.');
       setSubmitting(false);
       return;
     }
 
-    router.push(`/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+    const pendingId =
+      typeof window !== 'undefined' ? localStorage.getItem('pendingTourneyId') : null;
+
+    if (pendingId) {
+      localStorage.removeItem('pendingTourneyId');
+      router.push(`/register/${pendingId}`);
+    } else {
+      router.push('/dashboard');
+    }
   }
 
   return (
@@ -65,13 +71,45 @@ export function LoginForm() {
         />
       </div>
 
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-semibold text-zinc-300">
+            Password <span className="text-red-500">*</span>
+          </label>
+          <Link
+            href="/forgot-password"
+            className="text-xs text-zinc-500 hover:text-red-400 transition-colors"
+          >
+            Forgot password?
+          </Link>
+        </div>
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+            placeholder="••••••••"
+            className="w-full px-4 py-2.5 pr-10 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-red-500 transition-colors"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
       <button
         type="submit"
         disabled={submitting}
         className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold transition-colors flex items-center justify-center gap-2 mt-1"
       >
         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-        {submitting ? 'Sending code…' : 'Send me a code'}
+        {submitting ? 'Logging in…' : 'Log in'}
       </button>
 
       <p className="text-center text-sm text-zinc-500">

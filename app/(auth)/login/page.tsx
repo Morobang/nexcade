@@ -16,7 +16,7 @@ export default function LoginPage() {
             <span className="text-white font-black text-2xl">N</span>
           </div>
           <h1 className="font-display text-4xl text-white">WELCOME BACK</h1>
-          <p className="text-zinc-500 text-sm mt-1">Enter your email — we&apos;ll send you a code to log in.</p>
+          <p className="text-zinc-500 text-sm mt-1">Log in to your NexCade account.</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8">

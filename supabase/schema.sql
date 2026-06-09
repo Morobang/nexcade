@@ -78,6 +78,8 @@ CREATE TABLE public.arcades (
   cover_url text,
   games_supported text[] NOT NULL DEFAULT ARRAY[]::text[],
   console_setup text,
+  latitude float8,
+  longitude float8,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()

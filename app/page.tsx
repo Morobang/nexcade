@@ -3,6 +3,7 @@ import { serverSupabase } from '@/lib/supabase-server';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { CountdownTimer, HeroCountdown } from '@/components/CountdownTimer';
+import { HomepageArcadeMap } from '@/components/HomepageArcadeMap';
 import {
   MapPin,
   Trophy,
@@ -55,7 +56,7 @@ export default async function Home() {
       .limit(6),
     serverSupabase
       .from('arcades')
-      .select('id, name, slug, city, games_supported, description')
+      .select('id, name, slug, city, games_supported, description, latitude, longitude')
       .eq('is_active', true)
       .limit(4),
     serverSupabase
@@ -494,6 +495,38 @@ export default async function Home() {
               );
             })}
           </div>
+        </section>
+      )}
+
+      {/* ── ARCADE MAP ── */}
+      {arcades && arcades.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="font-display text-4xl text-white">ARCADES ACROSS SA</h2>
+              <p className="text-zinc-500 mt-1">Every pin is a venue running NexCade events</p>
+            </div>
+            <Link
+              href="/arcades"
+              className="hidden sm:flex items-center gap-1 text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Explore all <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <HomepageArcadeMap
+            arcades={(arcades as any[])
+              .filter((a) => a.latitude && a.longitude)
+              .map((a) => ({
+                id: a.id,
+                name: a.name,
+                slug: a.slug,
+                city: a.city,
+                latitude: a.latitude,
+                longitude: a.longitude,
+                games_supported: a.games_supported ?? [],
+                nextTournament: null,
+              }))}
+          />
         </section>
       )}
 

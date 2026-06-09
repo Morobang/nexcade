@@ -45,6 +45,11 @@ export function Footer() {
                   Live
                 </Link>
               </li>
+              <li>
+                <Link href="/news" className="hover:text-white transition-colors">
+                  News
+                </Link>
+              </li>
             </ul>
           </div>
 

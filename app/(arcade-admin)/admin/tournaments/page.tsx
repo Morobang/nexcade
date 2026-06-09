@@ -209,10 +209,18 @@ export default function AdminTournamentsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right">
+                    <div className="text-right hidden sm:block">
                       <p className="text-xs text-zinc-500">Prize pool</p>
                       <p className="text-sm font-bold text-white">{formatCurrency(t.prize_pool)}</p>
                     </div>
+                    {t.format === 'group_ko' && (
+                      <Link
+                        href={`/admin/tournaments/${t.id}/groups`}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 hover:bg-blue-500/20 text-xs font-semibold transition-colors"
+                      >
+                        Groups
+                      </Link>
+                    )}
                     <Link
                       href={`/tournaments/${t.slug}`}
                       className="flex items-center gap-1 text-zinc-500 hover:text-zinc-300 transition-colors"

@@ -280,6 +280,20 @@ export default async function TournamentDetailPage({ params }: { params: Params 
             </div>
           )}
 
+          {/* Group stage link (group_ko only) */}
+          {tournament.format === 'group_ko' && (
+            <Link
+              href={`/tournaments/${tournament.slug}/groups`}
+              className="flex items-center justify-between px-5 py-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-zinc-600 transition-colors"
+            >
+              <div className="flex items-center gap-2 text-zinc-200 font-semibold text-sm">
+                <ChevronRight className="w-4 h-4 text-blue-400" />
+                View Group Stage
+              </div>
+              <ChevronRight className="w-4 h-4 text-zinc-600" />
+            </Link>
+          )}
+
           {/* View bracket */}
           <Link
             href={`/tournaments/${tournament.slug}/bracket`}
@@ -287,7 +301,7 @@ export default async function TournamentDetailPage({ params }: { params: Params 
           >
             <div className="flex items-center gap-2 text-zinc-200 font-semibold text-sm">
               <Trophy className="w-4 h-4 text-yellow-400" />
-              View Bracket
+              {tournament.format === 'group_ko' ? 'Knockout Bracket' : 'View Bracket'}
             </div>
             <ChevronRight className="w-4 h-4 text-zinc-600" />
           </Link>

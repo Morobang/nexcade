@@ -1,8 +1,6 @@
 'use client';
 
-// Single-elimination bracket visualiser.
-// We don't store per-match data, so intermediate rounds show TBD.
-// Results (by placement) fill in what we know.
+import { Trophy } from 'lucide-react';
 
 type Player = { id: string; gamer_tag: string; full_name: string };
 type ResultMap = Map<string, number>; // profile_id → placement
@@ -27,11 +25,13 @@ function Slot({
   isBye,
   placement,
   highlightWinner,
+  isNewWinner,
 }: {
   player: Player | null;
   isBye?: boolean;
   placement?: number;
   highlightWinner?: boolean;
+  isNewWinner?: boolean;
 }) {
   const isWinner = placement === 1;
   const isRunnerUp = placement === 2;
@@ -45,8 +45,10 @@ function Slot({
   }
 
   return (
-    <div className={`h-10 px-3 flex items-center justify-between gap-2 rounded-lg border text-sm transition-all ${
-      isWinner
+    <div className={`h-10 px-3 flex items-center justify-between gap-2 rounded-lg border text-sm transition-all duration-500 ${
+      isNewWinner
+        ? 'bg-yellow-500/30 border-yellow-400 text-yellow-200 animate-pulse'
+        : isWinner
         ? 'bg-yellow-500/15 border-yellow-500/40 text-yellow-300'
         : isRunnerUp
         ? 'bg-zinc-700/40 border-zinc-600 text-zinc-300'
@@ -67,17 +69,17 @@ function Match({
   p2,
   results,
   isFinal,
+  newWinnerId,
 }: {
   p1: Player | null;
   p2: Player | null;
   results: ResultMap;
   isFinal: boolean;
+  newWinnerId?: string | null;
 }) {
   const p1Place = p1 ? results.get(p1.id) : undefined;
   const p2Place = p2 ? results.get(p2.id) : undefined;
 
-  // For final: placement 1 = winner, 2 = runner-up
-  // For other rounds: lower placement = advanced further
   const p1IsWinner = isFinal ? p1Place === 1 : (p1Place !== undefined && p2Place !== undefined && p1Place < p2Place);
   const p2IsWinner = isFinal ? p2Place === 1 : (p2Place !== undefined && p1Place !== undefined && p2Place < p1Place);
   const hasResult = p1Place !== undefined || p2Place !== undefined;
@@ -89,12 +91,14 @@ function Match({
         isBye={p1 === null}
         placement={isFinal ? p1Place : (p1IsWinner ? 1 : p1Place)}
         highlightWinner={hasResult && !p1IsWinner}
+        isNewWinner={!!p1 && p1.id === newWinnerId}
       />
       <Slot
         player={p2}
         isBye={p2 === null}
         placement={isFinal ? p2Place : (p2IsWinner ? 1 : p2Place)}
         highlightWinner={hasResult && !p2IsWinner}
+        isNewWinner={!!p2 && p2.id === newWinnerId}
       />
     </div>
   );
@@ -103,9 +107,11 @@ function Match({
 export function TournamentBracket({
   players,
   results,
+  newWinnerId,
 }: {
   players: Player[];
   results: { profile_id: string; placement: number }[];
+  newWinnerId?: string | null;
 }) {
   const resultMap: ResultMap = new Map(results.map((r) => [r.profile_id, r.placement]));
   const totalSlots = nextPow2(Math.max(players.length, 2));
@@ -175,6 +181,7 @@ export function TournamentBracket({
                     p2={match.p2}
                     results={resultMap}
                     isFinal={isFinalRound}
+                    newWinnerId={newWinnerId}
                   />
                 ))}
               </div>
@@ -189,7 +196,7 @@ export function TournamentBracket({
             <div className="h-10 px-4 flex items-center gap-2 rounded-lg border bg-yellow-500/20 border-yellow-500/40">
               {winner ? (
                 <>
-                  <span className="text-yellow-400 text-sm font-black">👑</span>
+                  <Trophy className="w-4 h-4 text-yellow-400 shrink-0" />
                   <span className="text-yellow-300 font-bold">{winner.gamer_tag}</span>
                 </>
               ) : (

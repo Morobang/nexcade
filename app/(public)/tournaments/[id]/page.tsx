@@ -5,6 +5,7 @@ import { serverSupabase } from '@/lib/supabase-server';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/Badge';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import { RegisterButton } from '@/components/RegisterButton';
 import {
   ArrowLeft,
   MapPin,
@@ -253,18 +254,7 @@ export default async function TournamentDetailPage({ params }: { params: Params 
                 </div>
               </div>
 
-              {spotsLeft > 0 ? (
-                <Link
-                  href={`/register/${tournament.id}`}
-                  className="mt-1 w-full text-center py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
-                >
-                  Register Now
-                </Link>
-              ) : (
-                <button disabled className="mt-1 w-full py-3 rounded-lg bg-zinc-800 text-zinc-500 font-bold cursor-not-allowed">
-                  Tournament Full
-                </button>
-              )}
+              <RegisterButton tournamentId={tournament.id} spotsLeft={spotsLeft} />
 
               {tournament.registration_deadline && (
                 <p className="text-xs text-zinc-600 text-center">

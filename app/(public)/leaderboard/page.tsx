@@ -66,9 +66,9 @@ function PodiumCard({ player, rank }: { player: PlayerRow; rank: 1 | 2 | 3 }) {
 export default async function LeaderboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ game?: string; arcade?: string; season?: string }>;
+  searchParams: Promise<{ game?: string; arcade?: string; season?: string; search?: string }>;
 }) {
-  const { game, arcade, season } = await searchParams;
+  const { game, arcade, season, search } = await searchParams;
 
   const [{ data: rawResults }, { data: arcadeList }, { data: seasonRows }] = await Promise.all([
     serverSupabase
@@ -135,6 +135,8 @@ export default async function LeaderboardPage({
     playerMap[pid].gameCounts[g] = (playerMap[pid].gameCounts[g] ?? 0) + 1;
   }
 
+  const q = search?.toLowerCase().trim() ?? '';
+
   const rows: PlayerRow[] = Object.values(playerMap)
     .map((p) => ({
       id: p.id,
@@ -146,6 +148,9 @@ export default async function LeaderboardPage({
       winRate: p.played > 0 ? Math.round((p.wins / p.played) * 100) : 0,
       mainGame: Object.entries(p.gameCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—',
     }))
+    .filter((p) =>
+      !q || p.gamer_tag.toLowerCase().includes(q) || p.full_name.toLowerCase().includes(q)
+    )
     .sort((a, b) => b.points - a.points || b.wins - a.wins);
 
   const top3 = rows.slice(0, 3) as PlayerRow[];
@@ -167,6 +172,7 @@ export default async function LeaderboardPage({
           activeGame={game}
           activeArcade={arcade}
           activeSeason={season}
+          activeSearch={search}
         />
       </Suspense>
 
@@ -175,8 +181,8 @@ export default async function LeaderboardPage({
           <Trophy className="w-14 h-14 text-zinc-700 mx-auto mb-4" />
           <p className="text-zinc-400 text-lg font-semibold">No results yet</p>
           <p className="text-zinc-600 text-sm mt-1">
-            {game || arcade || season
-              ? 'Try adjusting the filters.'
+            {game || arcade || season || search
+              ? 'Try adjusting your search or filters.'
               : 'Rankings will appear once tournaments are completed.'}
           </p>
         </div>

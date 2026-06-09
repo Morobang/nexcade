@@ -22,7 +22,7 @@ type Stats = {
 };
 
 const QUICK_LINKS = [
-  { href: '/admin/create-tournament', icon: PlusCircle,    label: 'Create Tournament',  desc: 'Set up a new event'           },
+  { href: '/admin/tournaments',        icon: PlusCircle,    label: 'Tournaments',        desc: 'Create and manage events'     },
   { href: '/admin/registrations',     icon: ListOrdered,   label: 'Registrations',      desc: 'Manage player sign-ups'       },
   { href: '/admin/revenue',           icon: TrendingUp,    label: 'Revenue',             desc: 'Track payments and earnings'  },
   { href: '/admin/stream',            icon: Tv,            label: 'Stream Controls',     desc: 'Go live and manage streams'   },

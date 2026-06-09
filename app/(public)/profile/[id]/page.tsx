@@ -5,7 +5,7 @@ import { serverSupabase } from '@/lib/supabase-server';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import {
   MapPin, Trophy, Gamepad2, Star, Calendar,
-  Shield, Gift, ChevronRight,
+  Shield, Gift, ChevronRight, Crown,
 } from 'lucide-react';
 
 type Params = Promise<{ id: string }>;
@@ -75,7 +75,7 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
       .eq('profile_id', id),
     serverSupabase
       .from('season_points')
-      .select('points, season')
+      .select('points, season, is_season_champion')
       .eq('profile_id', id),
   ]);
 
@@ -88,6 +88,7 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
   const wins = results.filter((r) => r.is_winner).length;
   const winRate = results.length > 0 ? Math.round((wins / results.length) * 100) : 0;
   const totalSeasonPoints = seasonRows.reduce((s, r) => s + r.points, 0);
+  const isSeasonChampion = (seasonRows as any[]).some((r) => r.is_season_champion === true);
   const paidCount = registrations.filter((r) => r.payment_status === 'paid').length;
   const loyaltyProgress = paidCount % 3;
   const tier = getTier(totalEntered);
@@ -131,6 +132,14 @@ export default async function PublicProfilePage({ params }: { params: Params }) 
               <Shield className="w-3 h-3" />
               {tier.label}
             </div>
+
+            {/* Season champion badge */}
+            {isSeasonChampion && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border text-yellow-400 border-yellow-500/40 bg-yellow-500/10">
+                <Crown className="w-3 h-3" />
+                Season Champion
+              </div>
+            )}
 
             {arcade && (
               <Link

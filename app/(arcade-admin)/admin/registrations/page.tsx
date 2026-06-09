@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { formatDate, formatCurrency } from '@/lib/utils';
+import { calculatePlacementPoints, getCurrentSeasonName } from '@/lib/points';
 import {
   Loader2, AlertCircle, ArrowLeft, Search, Filter,
   Download, CheckCircle2, Banknote, Trophy, Medal,
-  MessageCircle, QrCode, X, Users,
+  MessageCircle, QrCode, X, Users, FlagTriangleRight,
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -55,9 +56,28 @@ const GAME_COLOR: Record<string, string> = {
   Naruto:  'text-green-400 bg-green-400/10 border-green-400/20',
 };
 
-const POINTS_BY_PLACEMENT: Record<number, number> = { 1: 100, 2: 60, 3: 30 };
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function upsertSeasonPoints(tournamentId: string, profileId: string, points: number) {
+  const season = getCurrentSeasonName();
+  const { data: existing } = await supabase
+    .from('season_points')
+    .select('id')
+    .eq('tournament_id', tournamentId)
+    .eq('profile_id', profileId)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase
+      .from('season_points')
+      .update({ points, updated_at: new Date().toISOString() })
+      .eq('id', existing.id);
+  } else {
+    await supabase
+      .from('season_points')
+      .insert({ tournament_id: tournamentId, profile_id: profileId, season, points });
+  }
+}
 
 function buildWhatsApp(phone: string | null, gamerTag: string, tournamentName: string, bookingRef: string) {
   if (!phone) return null;
@@ -250,7 +270,7 @@ export default function AdminRegistrationsPage() {
   async function setPlacement(reg: RegRow, placement: number) {
     setActionLoading(`place-${reg.id}`);
     const isWinner = placement === 1;
-    const points = POINTS_BY_PLACEMENT[placement] ?? 0;
+    const { points } = calculatePlacementPoints(placement);
 
     if (reg.result_id) {
       await supabase
@@ -270,6 +290,42 @@ export default function AdminRegistrationsPage() {
         prev.map((r) => r.id === reg.id ? { ...r, placement, is_winner: isWinner, result_id: data?.id ?? null } : r)
       );
     }
+
+    // Award season points for this player
+    await upsertSeasonPoints(reg.tournament_id, reg.profile_id, points);
+
+    setActionLoading(null);
+  }
+
+  async function completeTournament(tournamentId: string) {
+    setActionLoading(`complete-${tournamentId}`);
+
+    // Mark tournament completed
+    await supabase.from('tournaments').update({ status: 'completed' }).eq('id', tournamentId);
+
+    // Award 10 participation points to all players who don't already have season_points
+    const participants = rows.filter((r) => r.tournament_id === tournamentId);
+    const { points: participationPts } = calculatePlacementPoints(99); // 99 = no placement = 0 from table, use 10 directly
+    const season = getCurrentSeasonName();
+
+    for (const p of participants) {
+      const { data: existing } = await supabase
+        .from('season_points')
+        .select('id')
+        .eq('tournament_id', tournamentId)
+        .eq('profile_id', p.profile_id)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.from('season_points').insert({
+          tournament_id: tournamentId,
+          profile_id: p.profile_id,
+          season,
+          points: 10,
+        });
+      }
+    }
+
     setActionLoading(null);
   }
 
@@ -415,6 +471,20 @@ export default function AdminRegistrationsPage() {
           <Download className="w-4 h-4" />
           Export CSV
         </button>
+
+        {/* Complete Tournament — awards participation points */}
+        {filterTournament && (
+          <button
+            onClick={() => completeTournament(filterTournament)}
+            disabled={actionLoading === `complete-${filterTournament}`}
+            className="flex items-center gap-2 px-4 py-2.5 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-xl text-purple-400 text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            {actionLoading === `complete-${filterTournament}`
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <FlagTriangleRight className="w-4 h-4" />}
+            Complete Tournament
+          </button>
+        )}
       </div>
 
       {/* Results count */}

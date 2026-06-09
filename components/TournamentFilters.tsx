@@ -50,7 +50,7 @@ export function TournamentFilters({ games, arcades, cities }: Props) {
     'bg-zinc-900 border border-zinc-700 text-zinc-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-red-600 transition-colors cursor-pointer';
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
       <SlidersHorizontal className="w-4 h-4 text-zinc-500 shrink-0" />
 
       <select
@@ -96,9 +96,9 @@ export function TournamentFilters({ games, arcades, cities }: Props) {
       {hasFilters && (
         <button
           onClick={() => router.push(pathname)}
-          className="text-xs text-red-400 hover:text-red-300 font-semibold transition-colors"
+          className="text-xs text-red-400 hover:text-red-300 font-semibold transition-colors px-1"
         >
-          Clear filters
+          Clear
         </button>
       )}
     </div>

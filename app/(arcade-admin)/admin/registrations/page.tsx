@@ -404,7 +404,7 @@ export default function AdminRegistrationsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3 flex-wrap">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mb-4 flex flex-wrap gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />

@@ -189,18 +189,20 @@ export default async function LeaderboardPage({
       ) : (
         <>
           {/* Podium */}
-          <div className="flex items-end justify-center gap-4 sm:gap-6 mb-12">
-            {top3[1] ? (
-              <PodiumCard player={top3[1]} rank={2} />
-            ) : (
-              <div className="flex-1 max-w-[220px]" />
-            )}
-            {top3[0] && <PodiumCard player={top3[0]} rank={1} />}
-            {top3[2] ? (
-              <PodiumCard player={top3[2]} rank={3} />
-            ) : (
-              <div className="flex-1 max-w-[220px]" />
-            )}
+          <div className="overflow-x-auto mb-12">
+            <div className="flex items-end justify-center gap-4 sm:gap-6 min-w-[480px] pb-2">
+              {top3[1] ? (
+                <PodiumCard player={top3[1]} rank={2} />
+              ) : (
+                <div className="flex-1 max-w-[220px]" />
+              )}
+              {top3[0] && <PodiumCard player={top3[0]} rank={1} />}
+              {top3[2] ? (
+                <PodiumCard player={top3[2]} rank={3} />
+              ) : (
+                <div className="flex-1 max-w-[220px]" />
+              )}
+            </div>
           </div>
 
           {/* Full table */}

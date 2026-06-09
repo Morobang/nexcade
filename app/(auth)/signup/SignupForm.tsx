@@ -110,9 +110,9 @@ export function SignupForm({ arcades }: Props) {
         return;
       }
 
-      // No session means Supabase requires email confirmation first
+      // No session means Supabase sent an OTP — direct user to code entry
       if (!authData.session) {
-        router.push('/verify-email');
+        router.push(`/verify?email=${encodeURIComponent(fields.email.trim().toLowerCase())}`);
         return;
       }
 

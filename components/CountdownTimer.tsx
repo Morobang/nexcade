@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 
-function getTimeLeft(targetDate: string) {
+type TimeLeft = { days: number; hours: number; minutes: number; seconds: number } | null;
+
+function getTimeLeft(targetDate: string): TimeLeft {
   const diff = new Date(targetDate).getTime() - Date.now();
   if (diff <= 0) return null;
   return {
@@ -14,14 +16,17 @@ function getTimeLeft(targetDate: string) {
 }
 
 export function CountdownTimer({ targetDate }: { targetDate: string }) {
-  const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(targetDate));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | undefined>(undefined);
 
   useEffect(() => {
+    setTimeLeft(getTimeLeft(targetDate));
     const timer = setInterval(() => setTimeLeft(getTimeLeft(targetDate)), 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  if (!timeLeft) return <span className="text-xs text-red-400 font-semibold">Starting now</span>;
+  // undefined = not yet mounted on client, show neutral placeholder
+  if (timeLeft === undefined) return <span className="text-xs text-zinc-600">--:--</span>;
+  if (timeLeft === null) return <span className="text-xs text-red-400 font-semibold">Starting now</span>;
 
   if (timeLeft.days > 0) {
     return (
@@ -56,15 +61,38 @@ function Unit({ value, label }: UnitProps) {
   );
 }
 
+function UnitPlaceholder({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-4xl font-display text-zinc-700 leading-none">--</span>
+      <span className="text-xs text-zinc-600 uppercase tracking-widest mt-1">{label}</span>
+    </div>
+  );
+}
+
 export function HeroCountdown({ targetDate, label }: { targetDate: string; label: string }) {
-  const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(targetDate));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | undefined>(undefined);
 
   useEffect(() => {
+    setTimeLeft(getTimeLeft(targetDate));
     const timer = setInterval(() => setTimeLeft(getTimeLeft(targetDate)), 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  if (!timeLeft) {
+  if (timeLeft === undefined) {
+    return (
+      <div>
+        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3 text-center">{label}</p>
+        <div className="flex items-end gap-4">
+          <UnitPlaceholder label="hrs" />
+          <UnitPlaceholder label="min" />
+          <UnitPlaceholder label="sec" />
+        </div>
+      </div>
+    );
+  }
+
+  if (timeLeft === null) {
     return (
       <div className="text-center">
         <p className="text-red-500 font-display text-2xl">LIVE NOW</p>

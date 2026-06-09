@@ -58,7 +58,7 @@ export default async function Home() {
       .from('arcades')
       .select('id, name, slug, city, games_supported, description, latitude, longitude')
       .eq('is_active', true)
-      .limit(4),
+      .order('name'),
     serverSupabase
       .from('registrations')
       .select('id, registered_at, profiles(gamer_tag), tournaments(name, game_type)')
@@ -357,7 +357,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {arcades.map((arcade) => (
+            {arcades.slice(0, 4).map((arcade) => (
               <Link
                 key={arcade.id}
                 href={`/arcades/${arcade.slug}`}

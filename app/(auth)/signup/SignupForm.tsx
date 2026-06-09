@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { ArcadeCombobox } from './ArcadeCombobox';
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 
 type Arcade = { id: string; name: string; city: string };
@@ -18,7 +19,6 @@ type Fields = {
   email: string;
   password: string;
   phone: string;
-  psn_id: string;
   home_arcade_id: string;
 };
 
@@ -41,7 +41,7 @@ function validate(f: Fields): FieldErrors {
   else if (f.password.length < 8) errors.password = 'Password must be at least 8 characters.';
 
   if (!f.phone.trim()) errors.phone = 'WhatsApp number is required.';
-  else if (!/^\+?[0-9\s\-()]{7,15}$/.test(f.phone.trim()))
+  else if (!/^\+?[0-9\s\-(]{7,15}$/.test(f.phone.trim()))
     errors.phone = 'Enter a valid phone number.';
 
   return errors;
@@ -60,7 +60,6 @@ export function SignupForm({ arcades }: Props) {
     email: '',
     password: '',
     phone: '',
-    psn_id: '',
     home_arcade_id: '',
   });
 
@@ -82,56 +81,34 @@ export function SignupForm({ arcades }: Props) {
     setSubmitting(true);
 
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: fields.email.trim(),
+      // All profile data passed in options.data — the DB trigger reads it and
+      // creates the profile row as SECURITY DEFINER, bypassing RLS.
+      const { error: authError } = await supabase.auth.signUp({
+        email: fields.email.trim().toLowerCase(),
         password: fields.password,
         options: {
-          data: { full_name: fields.full_name.trim() },
+          data: {
+            full_name: fields.full_name.trim(),
+            gamer_tag: fields.gamer_tag.trim(),
+            phone: fields.phone.trim(),
+            home_arcade_id: fields.home_arcade_id || null,
+          },
         },
       });
 
       if (authError) {
-        setGlobalError(authError.message);
-        setSubmitting(false);
-        return;
-      }
-
-      const userId = authData.user?.id;
-      if (!userId) {
-        setGlobalError('Signup failed. Please try again.');
-        setSubmitting(false);
-        return;
-      }
-
-      // Insert profile row
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: userId,
-        full_name: fields.full_name.trim(),
-        gamer_tag: fields.gamer_tag.trim(),
-        email: fields.email.trim().toLowerCase(),
-        phone: fields.phone.trim(),
-        psn_id: fields.psn_id.trim() || null,
-        home_arcade_id: fields.home_arcade_id || null,
-        role: 'player',
-      });
-
-      if (profileError) {
-        if (profileError.message.includes('gamer_tag')) {
-          setFieldErrors({ gamer_tag: 'This gamer tag is already taken.' });
-        } else if (profileError.message.includes('email')) {
+        if (authError.message.toLowerCase().includes('already registered')) {
           setFieldErrors({ email: 'An account with this email already exists.' });
         } else {
-          setGlobalError(profileError.message);
+          setGlobalError(authError.message);
         }
         setSubmitting(false);
         return;
       }
 
       // Check for pending tournament registration
-      const pendingId = typeof window !== 'undefined'
-        ? localStorage.getItem('pendingTourneyId')
-        : null;
+      const pendingId =
+        typeof window !== 'undefined' ? localStorage.getItem('pendingTourneyId') : null;
 
       if (pendingId) {
         localStorage.removeItem('pendingTourneyId');
@@ -155,12 +132,7 @@ export function SignupForm({ arcades }: Props) {
         </div>
       )}
 
-      {/* Full name */}
-      <Field
-        label="Full name"
-        error={fieldErrors.full_name}
-        required
-      >
+      <Field label="Full name" error={fieldErrors.full_name} required>
         <input
           type="text"
           autoComplete="name"
@@ -171,10 +143,9 @@ export function SignupForm({ arcades }: Props) {
         />
       </Field>
 
-      {/* Gamer tag */}
       <Field
         label="Gamer tag"
-        hint="Letters, numbers, underscores. This is your public handle."
+        hint="Letters, numbers and underscores only. This is your public handle."
         error={fieldErrors.gamer_tag}
         required
       >
@@ -188,7 +159,6 @@ export function SignupForm({ arcades }: Props) {
         />
       </Field>
 
-      {/* Email */}
       <Field label="Email" error={fieldErrors.email} required>
         <input
           type="email"
@@ -200,7 +170,6 @@ export function SignupForm({ arcades }: Props) {
         />
       </Field>
 
-      {/* Password */}
       <Field label="Password" hint="At least 8 characters." error={fieldErrors.password} required>
         <div className="relative">
           <input
@@ -222,7 +191,6 @@ export function SignupForm({ arcades }: Props) {
         </div>
       </Field>
 
-      {/* WhatsApp number */}
       <Field
         label="WhatsApp number"
         hint="Used for event reminders and confirmations."
@@ -239,31 +207,17 @@ export function SignupForm({ arcades }: Props) {
         />
       </Field>
 
-      {/* PSN ID */}
-      <Field label="PSN ID" hint="Optional — shown on your public profile." error={fieldErrors.psn_id}>
-        <input
-          type="text"
-          value={fields.psn_id}
-          onChange={(e) => set('psn_id', e.target.value)}
-          placeholder="BlazeSA_PSN"
-          className={inputClass(false)}
-        />
-      </Field>
-
-      {/* Home arcade */}
-      <Field label="Home arcade" hint="Optional — the arcade you play at most." error={fieldErrors.home_arcade_id}>
-        <select
+      <Field
+        label="Home arcade"
+        hint="The arcade you play at most — optional."
+        error={fieldErrors.home_arcade_id}
+      >
+        <ArcadeCombobox
+          arcades={arcades}
           value={fields.home_arcade_id}
-          onChange={(e) => set('home_arcade_id', e.target.value)}
-          className={inputClass(false)}
-        >
-          <option value="">Select an arcade (optional)</option>
-          {arcades.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name} — {a.city}
-            </option>
-          ))}
-        </select>
+          onChange={(id) => set('home_arcade_id', id)}
+          hasError={!!fieldErrors.home_arcade_id}
+        />
       </Field>
 
       <button

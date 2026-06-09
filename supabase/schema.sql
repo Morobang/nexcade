@@ -280,3 +280,26 @@ CREATE POLICY "News insert admins" ON public.news_posts FOR INSERT WITH CHECK (a
 CREATE POLICY "News update admins" ON public.news_posts FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "News delete admins" ON public.news_posts FOR DELETE USING (auth.role() = 'authenticated');
 
+-- Auto-create profile on signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, gamer_tag, email, phone, home_arcade_id, role)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'gamer_tag',
+    NEW.email,
+    NULLIF(TRIM(NEW.raw_user_meta_data->>'phone'), ''),
+    NULLIF(NEW.raw_user_meta_data->>'home_arcade_id', '')::uuid,
+    'player'
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+

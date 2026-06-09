@@ -144,30 +144,35 @@ export default function DashboardPage() {
 
         {/* ── SIDEBAR ── */}
         <aside className="lg:w-60 shrink-0">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 lg:sticky lg:top-24">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 lg:p-5 lg:sticky lg:top-24">
 
-            <div className="flex flex-col items-center text-center mb-5 pb-5 border-b border-zinc-800">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center mb-3 shadow-lg shadow-red-600/20">
+            {/* Profile — row on mobile, column on desktop */}
+            <div className="flex lg:flex-col items-center lg:text-center gap-3 mb-4 pb-4 lg:mb-5 lg:pb-5 border-b border-zinc-800">
+              <div className="w-11 h-11 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 lg:mb-3 shadow-lg shadow-red-600/20">
                 {profile.avatar_url
-                  ? <img src={profile.avatar_url} alt="" className="w-full h-full rounded-2xl object-cover" />  // eslint-disable-line @next/next/no-img-element
-                  : <span className="text-white font-black text-xl">{initials}</span>}
+                  ? <img src={profile.avatar_url} alt="" className="w-full h-full rounded-xl lg:rounded-2xl object-cover" />  // eslint-disable-line @next/next/no-img-element
+                  : <span className="text-white font-black text-base lg:text-xl">{initials}</span>}
               </div>
-              <p className="text-white font-bold leading-tight">{profile.gamer_tag}</p>
-              <p className="text-zinc-500 text-sm">{profile.full_name}</p>
+              <div>
+                <p className="text-white font-bold leading-tight">{profile.gamer_tag}</p>
+                <p className="text-zinc-500 text-sm">{profile.full_name}</p>
+              </div>
             </div>
 
-            <nav className="flex flex-col gap-1 mb-5">
+            {/* Nav — scrollable row on mobile, column on desktop */}
+            <nav className="flex lg:flex-col gap-1 mb-4 lg:mb-5 overflow-x-auto pb-1 lg:pb-0 -mx-1 px-1">
               {NAV.map(({ id, label, icon: Icon }) => (
                 <button key={id} onClick={() => setTab(id)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors text-left w-full ${tab === id ? 'bg-red-600/20 text-red-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                  className={`flex items-center gap-2 lg:gap-3 px-3 py-2 lg:py-2.5 rounded-xl text-xs lg:text-sm font-semibold transition-colors shrink-0 lg:shrink lg:w-full text-left ${tab === id ? 'bg-red-600/20 text-red-400' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />{label}
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="whitespace-nowrap lg:whitespace-normal">{label}</span>
                 </button>
               ))}
             </nav>
 
             <button onClick={handleSignOut}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors w-full"
+              className="hidden lg:flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors w-full"
             >
               <LogOut className="w-4 h-4 shrink-0" />Log out
             </button>

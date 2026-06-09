@@ -20,6 +20,7 @@ type Fields = {
   password: string;
   phone: string;
   home_arcade_id: string;
+  terms: boolean;
 };
 
 type FieldErrors = Partial<Record<keyof Fields, string>>;
@@ -44,6 +45,8 @@ function validate(f: Fields): FieldErrors {
   else if (!/^\+?[0-9\s\-(]{7,15}$/.test(f.phone.trim()))
     errors.phone = 'Enter a valid phone number.';
 
+  if (!f.terms) errors.terms = 'You must agree to the Terms of Service to continue.';
+
   return errors;
 }
 
@@ -61,9 +64,10 @@ export function SignupForm({ arcades }: Props) {
     password: '',
     phone: '',
     home_arcade_id: '',
+    terms: false,
   });
 
-  function set(key: keyof Fields, value: string) {
+  function set(key: keyof Fields, value: string | boolean) {
     setFields((prev) => ({ ...prev, [key]: value }));
     if (fieldErrors[key]) setFieldErrors((prev) => ({ ...prev, [key]: undefined }));
   }
@@ -83,7 +87,7 @@ export function SignupForm({ arcades }: Props) {
     try {
       // All profile data passed in options.data — the DB trigger reads it and
       // creates the profile row as SECURITY DEFINER, bypassing RLS.
-      const { error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: fields.email.trim().toLowerCase(),
         password: fields.password,
         options: {
@@ -106,7 +110,13 @@ export function SignupForm({ arcades }: Props) {
         return;
       }
 
-      // Check for pending tournament registration
+      // No session means Supabase requires email confirmation first
+      if (!authData.session) {
+        router.push('/verify-email');
+        return;
+      }
+
+      // Session available — check for pending tournament registration
       const pendingId =
         typeof window !== 'undefined' ? localStorage.getItem('pendingTourneyId') : null;
 
@@ -219,6 +229,34 @@ export function SignupForm({ arcades }: Props) {
           hasError={!!fieldErrors.home_arcade_id}
         />
       </Field>
+
+      {/* Terms */}
+      <div className="flex flex-col gap-1.5">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={fields.terms}
+            onChange={(e) => set('terms', e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-zinc-600 bg-zinc-800 accent-red-600 shrink-0"
+          />
+          <span className="text-sm text-zinc-400 leading-snug">
+            I agree to the{' '}
+            <Link href="/terms" className="text-red-400 hover:text-red-300 underline" target="_blank">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-red-400 hover:text-red-300 underline" target="_blank">
+              Privacy Policy
+            </Link>
+          </span>
+        </label>
+        {fieldErrors.terms && (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3 shrink-0" />
+            {fieldErrors.terms}
+          </p>
+        )}
+      </div>
 
       <button
         type="submit"

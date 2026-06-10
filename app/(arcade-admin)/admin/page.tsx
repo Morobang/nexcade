@@ -40,7 +40,7 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace('/login'); return; }
+      if (!user) { router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`); return; }
 
       // Check role and get arcade
       const { data: profile } = await supabase

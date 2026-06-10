@@ -94,7 +94,7 @@ export default function AdminTournamentGroupsPage() {
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.replace('/login'); return; }
+    if (!user) { router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`); return; }
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     if (!profile || !['arcade_owner', 'platform_admin'].includes(profile.role)) {

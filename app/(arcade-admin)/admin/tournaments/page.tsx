@@ -84,7 +84,7 @@ export default function AdminTournamentsPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace('/login'); return; }
+      if (!user) { router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`); return; }
 
       const { data: profile } = await supabase
         .from('profiles')

@@ -7,9 +7,9 @@ import { supabase } from '@/lib/supabase';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   Loader2, AlertCircle, Building2, Users, Trophy,
-  Banknote, ShieldCheck, ShieldOff, Trash2,
+  Banknote, ShieldCheck, ShieldOff,
   CheckCircle2, XCircle, Gamepad2, Crown,
-  LayoutDashboard, ChevronRight,
+  LayoutDashboard, ChevronRight, ClipboardList, Clock,
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -56,7 +56,25 @@ type PlatformStats = {
   totalRevenue: number;
 };
 
-type Tab = 'overview' | 'arcades' | 'users' | 'tournaments';
+type ApplicationRow = {
+  id: string;
+  profile_id: string;
+  arcade_name: string;
+  city: string;
+  address: string | null;
+  contact_email: string;
+  whatsapp_number: string | null;
+  games_supported: string[];
+  description: string | null;
+  console_setup: string | null;
+  status: string;
+  rejection_reason: string | null;
+  created_at: string;
+  applicant_name: string | null;
+  applicant_email: string | null;
+};
+
+type Tab = 'overview' | 'applications' | 'arcades' | 'users' | 'tournaments';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -92,9 +110,12 @@ export default function PlatformAdminPage() {
   const [arcades, setArcades] = useState<ArcadeRow[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
+  const [applications, setApplications] = useState<ApplicationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const loadAll = useCallback(async () => {
     // Arcades with owner profile
@@ -170,6 +191,34 @@ export default function PlatformAdminPage() {
       reg_count: regCountMap[t.id] ?? 0,
     }));
 
+    // Applications
+    const { data: appData } = await supabase
+      .from('arcade_applications')
+      .select('id, profile_id, arcade_name, city, address, contact_email, whatsapp_number, games_supported, description, console_setup, status, rejection_reason, created_at, profiles(full_name, email)')
+      .order('created_at', { ascending: false });
+
+    const appRows: ApplicationRow[] = (appData ?? []).map((a) => {
+      const applicant = (a as any).profiles as { full_name: string; email: string } | null;
+      return {
+        id: a.id,
+        profile_id: a.profile_id,
+        arcade_name: a.arcade_name,
+        city: a.city,
+        address: a.address,
+        contact_email: a.contact_email,
+        whatsapp_number: a.whatsapp_number,
+        games_supported: a.games_supported ?? [],
+        description: a.description,
+        console_setup: a.console_setup,
+        status: a.status,
+        rejection_reason: a.rejection_reason,
+        created_at: a.created_at,
+        applicant_name: applicant?.full_name ?? null,
+        applicant_email: applicant?.email ?? null,
+      };
+    });
+
+    setApplications(appRows);
     setArcades(arcadeRows);
     setTournaments(tourneyRows);
     setUsers((userData ?? []) as UserRow[]);
@@ -202,6 +251,25 @@ export default function PlatformAdminPage() {
   }, [router, loadAll]);
 
   // ── Actions ─────────────────────────────────────────────────────────────────
+
+  async function approveApplication(appId: string) {
+    setActionLoading(`app-${appId}`);
+    const { error } = await supabase.rpc('approve_arcade_application', { p_application_id: appId });
+    if (!error) {
+      setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, status: 'approved' } : a));
+      await loadAll();
+    }
+    setActionLoading(null);
+  }
+
+  async function rejectApplication(appId: string, reason: string) {
+    setActionLoading(`app-${appId}`);
+    await supabase.rpc('reject_arcade_application', { p_application_id: appId, p_reason: reason || null });
+    setApplications((prev) => prev.map((a) => a.id === appId ? { ...a, status: 'rejected', rejection_reason: reason || null } : a));
+    setRejectModal(null);
+    setRejectReason('');
+    setActionLoading(null);
+  }
 
   async function setArcadeActive(arcadeId: string, active: boolean) {
     setActionLoading(`arcade-${arcadeId}`);
@@ -243,11 +311,14 @@ export default function PlatformAdminPage() {
     );
   }
 
+  const pendingApps = applications.filter((a) => a.status === 'pending');
+
   const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'overview',    label: 'Overview',    icon: LayoutDashboard },
-    { id: 'arcades',     label: `Arcades (${arcades.length})`,        icon: Building2  },
-    { id: 'users',       label: `Users (${users.length})`,            icon: Users      },
-    { id: 'tournaments', label: `Tournaments (${tournaments.length})`, icon: Trophy    },
+    { id: 'overview',     label: 'Overview',    icon: LayoutDashboard },
+    { id: 'applications', label: `Applications${pendingApps.length > 0 ? ` (${pendingApps.length})` : ''}`, icon: ClipboardList },
+    { id: 'arcades',      label: `Arcades (${arcades.length})`,        icon: Building2  },
+    { id: 'users',        label: `Users (${users.length})`,            icon: Users      },
+    { id: 'tournaments',  label: `Tournaments (${tournaments.length})`, icon: Trophy    },
   ];
 
   return (
@@ -323,6 +394,96 @@ export default function PlatformAdminPage() {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── APPLICATIONS TAB ── */}
+      {tab === 'applications' && (
+        <div className="flex flex-col gap-4">
+          {applications.length === 0 && (
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-12 text-center">
+              <ClipboardList className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+              <p className="text-zinc-500 text-sm">No applications yet.</p>
+            </div>
+          )}
+          {applications.map((a) => (
+            <div key={a.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${
+                      a.status === 'pending'  ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' :
+                      a.status === 'approved' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
+                                                'text-red-400 bg-red-400/10 border-red-400/20'
+                    }`}>
+                      {a.status === 'pending' && <Clock className="w-3 h-3" />}
+                      {a.status === 'approved' && <CheckCircle2 className="w-3 h-3" />}
+                      {a.status === 'rejected' && <XCircle className="w-3 h-3" />}
+                      {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+                    </span>
+                    <span className="text-zinc-600 text-xs">{formatDate(a.created_at, 'short')}</span>
+                  </div>
+                  <h3 className="text-white font-bold text-lg">{a.arcade_name}</h3>
+                  <p className="text-zinc-400 text-sm">{a.city}{a.address ? ` · ${a.address}` : ''}</p>
+                </div>
+
+                {a.status === 'pending' && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => approveApplication(a.id)}
+                      disabled={actionLoading === `app-${a.id}`}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-green-600/20 hover:bg-green-600/30 border border-green-600/30 text-green-400 text-sm font-semibold transition-all disabled:opacity-50"
+                    >
+                      {actionLoading === `app-${a.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => { setRejectModal({ id: a.id, name: a.arcade_name }); setRejectReason(''); }}
+                      disabled={actionLoading === `app-${a.id}`}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-600/20 hover:bg-red-600/30 border border-red-600/30 text-red-400 text-sm font-semibold transition-all disabled:opacity-50"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="bg-zinc-800/60 rounded-xl p-3">
+                  <p className="text-zinc-500 mb-0.5">Applicant</p>
+                  <p className="text-zinc-200 font-semibold truncate">{a.applicant_name ?? '—'}</p>
+                  <p className="text-zinc-500 truncate">{a.applicant_email ?? '—'}</p>
+                </div>
+                <div className="bg-zinc-800/60 rounded-xl p-3">
+                  <p className="text-zinc-500 mb-0.5">Contact</p>
+                  <p className="text-zinc-200 truncate">{a.contact_email}</p>
+                  {a.whatsapp_number && <p className="text-zinc-500">{a.whatsapp_number}</p>}
+                </div>
+                <div className="bg-zinc-800/60 rounded-xl p-3 col-span-2">
+                  <p className="text-zinc-500 mb-1">Games</p>
+                  <div className="flex flex-wrap gap-1">
+                    {a.games_supported.map((g) => (
+                      <span key={g} className="px-1.5 py-0.5 bg-zinc-700 rounded text-zinc-300">{g}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {(a.description || a.console_setup) && (
+                <div className="text-xs text-zinc-500 border-t border-zinc-800 pt-3 flex flex-col gap-1">
+                  {a.description && <p><span className="text-zinc-400 font-semibold">About: </span>{a.description}</p>}
+                  {a.console_setup && <p><span className="text-zinc-400 font-semibold">Setup: </span>{a.console_setup}</p>}
+                </div>
+              )}
+
+              {a.status === 'rejected' && a.rejection_reason && (
+                <div className="text-xs text-red-400 border-t border-zinc-800 pt-3">
+                  <span className="font-semibold">Rejection reason: </span>{a.rejection_reason}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -504,6 +665,41 @@ export default function PlatformAdminPage() {
                 No tournaments yet.
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── REJECT MODAL ── */}
+      {rejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-md">
+            <h3 className="font-bold text-white text-lg mb-1">Reject application</h3>
+            <p className="text-zinc-400 text-sm mb-5">
+              Rejecting <span className="text-white font-semibold">{rejectModal.name}</span>. Optionally add a reason.
+            </p>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+              placeholder="Reason (optional — the applicant will see this)"
+              className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-red-500 transition-colors resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => rejectApplication(rejectModal.id, rejectReason)}
+                disabled={actionLoading === `app-${rejectModal.id}`}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                {actionLoading === `app-${rejectModal.id}` && <Loader2 className="w-4 h-4 animate-spin" />}
+                Confirm reject
+              </button>
+              <button
+                onClick={() => { setRejectModal(null); setRejectReason(''); }}
+                className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-sm transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

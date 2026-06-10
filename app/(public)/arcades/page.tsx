@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { serverSupabase } from '@/lib/supabase-server';
 import { ArcadeDiscovery } from '@/components/ArcadeDiscovery';
+import { PlusCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Arcades',
@@ -43,9 +45,18 @@ export default async function ArcadesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-8">
-        <h1 className="font-display text-5xl text-white mb-2">ARCADES</h1>
-        <p className="text-zinc-400">Find venues running NexCade events across South Africa</p>
+      <div className="flex items-end justify-between gap-4 mb-8 flex-wrap">
+        <div>
+          <h1 className="font-display text-5xl text-white mb-2">ARCADES</h1>
+          <p className="text-zinc-400">Find venues running NexCade events across South Africa</p>
+        </div>
+        <Link
+          href="/arcades/apply"
+          className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-colors shrink-0"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Register your arcade
+        </Link>
       </div>
 
       <ArcadeDiscovery arcades={enriched as any} cities={cities} games={games} />

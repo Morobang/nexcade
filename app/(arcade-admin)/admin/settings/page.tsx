@@ -135,7 +135,7 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace('/login'); return; }
+      if (!user) { router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`); return; }
 
       const { data: profile } = await supabase
         .from('profiles').select('role').eq('id', user.id).single();

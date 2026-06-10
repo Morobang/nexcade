@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,6 +34,12 @@ export function LoginForm() {
     if (authError) {
       setError('Incorrect email or password. Please try again.');
       setSubmitting(false);
+      return;
+    }
+
+    const next = searchParams.get('next');
+    if (next && next.startsWith('/')) {
+      router.push(next);
       return;
     }
 

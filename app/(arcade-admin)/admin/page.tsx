@@ -8,10 +8,10 @@ import { formatCurrency } from '@/lib/utils';
 import {
   Loader2, Users, Banknote, Gamepad2, CheckCircle2,
   Trophy, LayoutDashboard, PlusCircle, ListOrdered,
-  Tv, Settings, TrendingUp, ChevronRight, AlertCircle,
+  Tv, Settings, TrendingUp, ChevronRight, AlertCircle, Clock,
 } from 'lucide-react';
 
-type Arcade = { id: string; name: string; city: string };
+type Arcade = { id: string; name: string; city: string; is_active: boolean };
 
 type Stats = {
   totalRegistrations: number;
@@ -57,7 +57,7 @@ export default function AdminOverviewPage() {
 
       const { data: arcadeData } = await supabase
         .from('arcades')
-        .select('id, name, city')
+        .select('id, name, city, is_active')
         .eq('owner_id', user.id)
         .single();
 
@@ -154,6 +154,17 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+      {/* Pending review banner */}
+      {!arcade!.is_active && (
+        <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl mb-6 text-sm text-yellow-300">
+          <Clock className="w-4 h-4 mt-0.5 shrink-0 text-yellow-400" />
+          <div>
+            <span className="font-semibold">Your arcade is under review.</span>
+            {' '}You can explore and set up your admin panel now — your arcade will become visible to players once our team approves it (usually within 1–3 business days).
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">

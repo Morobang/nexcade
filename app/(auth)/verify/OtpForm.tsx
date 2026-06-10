@@ -72,7 +72,7 @@ export function OtpForm({ email }: Props) {
     setSubmitting(true);
     setError('');
 
-    const { error: verifyError } = await supabase.auth.verifyOtp({
+    const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
       email,
       token,
       type: 'email',
@@ -93,10 +93,30 @@ export function OtpForm({ email }: Props) {
       return;
     }
 
-    const pendingId =
-      typeof window !== 'undefined' ? localStorage.getItem('pendingTourneyId') : null;
+    const pendingArcadeApp = localStorage.getItem('pendingArcadeApp');
+    const pendingId = localStorage.getItem('pendingTourneyId');
 
-    if (pendingId) {
+    if (pendingArcadeApp) {
+      try {
+        const d = JSON.parse(pendingArcadeApp);
+        await supabase.rpc('register_arcade_owner', {
+          p_arcade_name:     d.arcade_name,
+          p_city:            d.city,
+          p_city_lat:        d.city_lat,
+          p_city_lng:        d.city_lng,
+          p_address:         d.address,
+          p_contact_email:   d.contact_email,
+          p_whatsapp_number: d.whatsapp_number,
+          p_games_supported: d.games_supported,
+          p_description:     d.description,
+          p_console_setup:   d.console_setup,
+        });
+      } catch {
+        // If RPC fails they can apply manually from /arcades/apply
+      }
+      localStorage.removeItem('pendingArcadeApp');
+      router.push('/admin');
+    } else if (pendingId) {
       localStorage.removeItem('pendingTourneyId');
       router.push(`/register/${pendingId}`);
     } else {

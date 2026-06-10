@@ -1,3 +1,5 @@
+set role postgres;
+
 -- Arcade applications — submitted by prospective arcade owners, reviewed by platform admin
 
 create table if not exists public.arcade_applications (

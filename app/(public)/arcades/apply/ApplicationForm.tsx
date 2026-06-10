@@ -4,20 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { CitySearch } from '@/components/CitySearch';
 import {
   Loader2, AlertCircle, CheckCircle2, Clock,
-  XCircle, Building2,
+  XCircle, Building2, Check, Plus, X,
 } from 'lucide-react';
 
-const GAMES = ['FC26', 'Tekken8', 'SF6', 'MK1', 'KOFXV', 'Naruto'] as const;
-
+const PRESET_GAMES = ['FC26', 'Tekken8', 'SF6', 'MK1', 'KOFXV', 'Naruto'] as const;
 const GAME_LABELS: Record<string, string> = {
-  FC26: 'EA FC 26',
-  Tekken8: 'Tekken 8',
-  SF6: 'Street Fighter 6',
-  MK1: 'Mortal Kombat 1',
-  KOFXV: 'KOF XV',
-  Naruto: 'Naruto Storm',
+  FC26: 'EA FC 26', Tekken8: 'Tekken 8', SF6: 'Street Fighter 6',
+  MK1: 'Mortal Kombat 1', KOFXV: 'KOF XV', Naruto: 'Naruto Storm',
 };
 
 type AppStatus = 'pending' | 'approved' | 'rejected';
@@ -36,10 +32,13 @@ export function ApplicationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [customGameInput, setCustomGameInput] = useState('');
 
   const [fields, setFields] = useState({
     arcade_name: '',
     city: '',
+    city_lat: null as number | null,
+    city_lng: null as number | null,
     address: '',
     contact_email: '',
     whatsapp_number: '',
@@ -56,23 +55,29 @@ export function ApplicationForm() {
         return;
       }
 
-      // Pre-fill contact email
       const { data: profile } = await supabase
         .from('profiles')
         .select('email, role')
         .eq('id', user.id)
         .single();
 
+      // arcade_owner with an approved arcade → go straight to admin
       if (profile?.role === 'arcade_owner') {
-        router.replace('/admin');
-        return;
+        const { data: existingApp } = await supabase
+          .from('arcade_applications')
+          .select('status, arcade_name, created_at, rejection_reason')
+          .eq('profile_id', user.id)
+          .single();
+        if (existingApp && existingApp.status !== 'rejected') {
+          router.replace('/admin');
+          return;
+        }
       }
 
       if (profile?.email) {
         setFields((f) => ({ ...f, contact_email: profile.email }));
       }
 
-      // Check for existing application
       const { data: app } = await supabase
         .from('arcade_applications')
         .select('status, arcade_name, created_at, rejection_reason')
@@ -85,13 +90,24 @@ export function ApplicationForm() {
     init();
   }, [router]);
 
-  function toggleGame(game: string) {
-    setGames((prev) =>
-      prev.includes(game) ? prev.filter((g) => g !== game) : [...prev, game]
-    );
+  function togglePresetGame(game: string) {
+    setGames((prev) => prev.includes(game) ? prev.filter((g) => g !== game) : [...prev, game]);
+    setError('');
   }
 
-  function set(key: keyof typeof fields, value: string) {
+  function addCustomGame() {
+    const name = customGameInput.trim();
+    if (!name || games.includes(name)) return;
+    setGames((prev) => [...prev, name]);
+    setCustomGameInput('');
+    setError('');
+  }
+
+  function removeGame(game: string) {
+    setGames((prev) => prev.filter((g) => g !== game));
+  }
+
+  function set(key: keyof typeof fields, value: string | number | null) {
     setFields((f) => ({ ...f, [key]: value }));
     setError('');
   }
@@ -110,26 +126,26 @@ export function ApplicationForm() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.replace('/login'); return; }
 
-    const { error: insertError } = await supabase.from('arcade_applications').insert({
-      profile_id:      user.id,
-      arcade_name:     fields.arcade_name.trim(),
-      city:            fields.city.trim(),
-      address:         fields.address.trim() || null,
-      contact_email:   fields.contact_email.trim().toLowerCase(),
-      whatsapp_number: fields.whatsapp_number.trim() || null,
-      games_supported: games,
-      description:     fields.description.trim() || null,
-      console_setup:   fields.console_setup.trim() || null,
+    const { error: rpcError } = await supabase.rpc('register_arcade_owner', {
+      p_arcade_name:     fields.arcade_name.trim(),
+      p_city:            fields.city.trim(),
+      p_city_lat:        fields.city_lat,
+      p_city_lng:        fields.city_lng,
+      p_address:         fields.address.trim() || null,
+      p_contact_email:   fields.contact_email.trim().toLowerCase(),
+      p_whatsapp_number: fields.whatsapp_number.trim() || null,
+      p_games_supported: games,
+      p_description:     fields.description.trim() || null,
+      p_console_setup:   fields.console_setup.trim() || null,
     });
 
-    if (insertError) {
-      setError(insertError.message);
+    if (rpcError) {
+      setError(rpcError.message);
       setSubmitting(false);
       return;
     }
 
-    setSubmitted(true);
-    setSubmitting(false);
+    router.push('/admin');
   }
 
   if (loading) {
@@ -140,7 +156,6 @@ export function ApplicationForm() {
     );
   }
 
-  // Already submitted — show status
   if (existing || submitted) {
     const status = submitted ? 'pending' : existing!.status;
     const arcadeName = submitted ? fields.arcade_name : existing!.arcade_name;
@@ -216,6 +231,7 @@ export function ApplicationForm() {
   }
 
   const inputClass = 'w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-red-500 transition-colors';
+  const customGames = games.filter((g) => !PRESET_GAMES.includes(g as typeof PRESET_GAMES[number]));
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
@@ -231,39 +247,36 @@ export function ApplicationForm() {
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col gap-5">
         <h2 className="font-bold text-white text-sm uppercase tracking-wider">Arcade Details</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-zinc-300">Arcade name <span className="text-red-500">*</span></label>
-            <input
-              type="text"
-              value={fields.arcade_name}
-              onChange={(e) => set('arcade_name', e.target.value)}
-              placeholder="e.g. Level Up Arcade"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-zinc-300">City <span className="text-red-500">*</span></label>
-            <input
-              type="text"
-              value={fields.city}
-              onChange={(e) => set('city', e.target.value)}
-              placeholder="e.g. Johannesburg"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-zinc-300">Street address</label>
+          <label className="text-sm font-semibold text-zinc-300">Arcade name <span className="text-red-500">*</span></label>
           <input
             type="text"
-            value={fields.address}
-            onChange={(e) => set('address', e.target.value)}
-            placeholder="e.g. Shop 12, Eastgate Mall, Bedfordview"
+            value={fields.arcade_name}
+            onChange={(e) => set('arcade_name', e.target.value)}
+            placeholder="e.g. Level Up Arcade"
             className={inputClass}
           />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-zinc-300">City <span className="text-red-500">*</span></label>
+            <CitySearch
+              value={fields.city}
+              onChange={(name, lat, lng) => setFields((f) => ({ ...f, city: name, city_lat: lat, city_lng: lng }))}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-zinc-300">Street address</label>
+            <input
+              type="text"
+              value={fields.address}
+              onChange={(e) => set('address', e.target.value)}
+              placeholder="e.g. Shop 12, Eastgate Mall"
+              className={inputClass}
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -272,7 +285,7 @@ export function ApplicationForm() {
             value={fields.description}
             onChange={(e) => set('description', e.target.value)}
             rows={3}
-            placeholder="Tell us about your arcade — how many setups, weekly events, vibe, etc."
+            placeholder="How many setups, weekly events, vibe, etc."
             className={`${inputClass} resize-none`}
           />
         </div>
@@ -291,27 +304,66 @@ export function ApplicationForm() {
 
       {/* Games */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col gap-4">
-        <h2 className="font-bold text-white text-sm uppercase tracking-wider">
-          Games Supported <span className="text-red-500">*</span>
-        </h2>
+        <div>
+          <h2 className="font-bold text-white text-sm uppercase tracking-wider">
+            Games Supported <span className="text-red-500">*</span>
+          </h2>
+          <p className="text-xs text-zinc-600 mt-1">Select from the list and/or add your own.</p>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {GAMES.map((game) => {
+          {PRESET_GAMES.map((game) => {
             const selected = games.includes(game);
             return (
               <button
                 key={game}
                 type="button"
-                onClick={() => toggleGame(game)}
-                className={`px-4 py-3 rounded-xl border text-sm font-semibold transition-all text-left ${
+                onClick={() => togglePresetGame(game)}
+                className={`px-4 py-3 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between gap-2 ${
                   selected
                     ? 'bg-red-600/20 border-red-500/50 text-red-300'
                     : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-300'
                 }`}
               >
-                {GAME_LABELS[game]}
+                <span>{GAME_LABELS[game]}</span>
+                {selected && <Check className="w-3.5 h-3.5 shrink-0" />}
               </button>
             );
           })}
+        </div>
+
+        {customGames.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {customGames.map((g) => (
+              <span key={g}
+                className="flex items-center gap-1.5 px-3 py-1 bg-zinc-800 border border-zinc-600 rounded-full text-xs text-zinc-300">
+                {g}
+                <button type="button" onClick={() => removeGame(g)}
+                  className="text-zinc-500 hover:text-red-400 transition-colors">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={customGameInput}
+            onChange={(e) => setCustomGameInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomGame(); } }}
+            placeholder="Add another game…"
+            className="flex-1 px-4 py-2 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-red-500 transition-colors"
+          />
+          <button
+            type="button"
+            onClick={addCustomGame}
+            disabled={!customGameInput.trim()}
+            className="px-4 py-2 rounded-xl bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" /> Add
+          </button>
         </div>
       </div>
 
@@ -332,7 +384,8 @@ export function ApplicationForm() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-zinc-300">WhatsApp number</label>
+            <label className="text-sm font-semibold text-zinc-300">Arcade contact WhatsApp</label>
+            <p className="text-xs text-zinc-600">Public number players can reach you on.</p>
             <input
               type="tel"
               value={fields.whatsapp_number}

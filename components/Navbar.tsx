@@ -7,12 +7,18 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { LogOut, LayoutDashboard, Menu, X, ShieldCheck, ChevronDown, Building2 } from 'lucide-react';
 
-const NAV_LINKS = [
+const PUBLIC_NAV = [
   { href: '/tournaments', label: 'Tournaments' },
   { href: '/arcades',     label: 'Arcades'      },
   { href: '/leaderboard', label: 'Leaderboard'  },
   { href: '/live',        label: 'Live'          },
   { href: '/news',        label: 'News'          },
+];
+
+const AUTHED_NAV = [
+  { href: '/tournaments', label: 'Tournaments' },
+  { href: '/arcades',     label: 'Arcades'      },
+  { href: '/dashboard',   label: 'Dashboard'    },
 ];
 
 type UserProfile = {
@@ -31,7 +37,7 @@ export function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    // onAuthStateChange fires INITIAL_SESSION immediately — no need for getSession() which can race
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setSession(s));
     return () => subscription.unsubscribe();
   }, []);
@@ -89,7 +95,7 @@ export function Navbar() {
 
           {/* Nav links — desktop */}
           <div className="hidden md:flex items-center gap-8">
-            {NAV_LINKS.map(({ href, label }) => (
+            {(session ? AUTHED_NAV : PUBLIC_NAV).map(({ href, label }) => (
               <Link key={href} href={href} className="text-zinc-300 hover:text-white transition-colors font-medium">
                 {label}
               </Link>
@@ -233,7 +239,7 @@ export function Navbar() {
               </div>
             )}
 
-            {NAV_LINKS.map(({ href, label }) => (
+            {(session ? AUTHED_NAV : PUBLIC_NAV).map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -248,11 +254,6 @@ export function Navbar() {
 
             {session ? (
               <>
-                <Link href="/dashboard" onClick={closeMobile}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 font-medium text-sm transition-colors">
-                  <LayoutDashboard className="w-4 h-4" />
-                  Dashboard
-                </Link>
                 {isArcadeOwner && (
                   <Link href="/admin" onClick={closeMobile}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 font-medium text-sm transition-colors">

@@ -65,16 +65,38 @@ export default async function Home() {
       .order('registered_at', { ascending: false })
       .limit(10),
     serverSupabase
-      .from('results')
-      .select('profile_id, points_awarded, profiles(full_name, gamer_tag), tournaments(game_type)')
-      .eq('is_winner', true)
-      .order('points_awarded', { ascending: false })
-      .limit(3),
+      .from('season_points')
+      .select('profile_id, points, profiles(full_name, gamer_tag, avatar_url)')
+      .order('points', { ascending: false })
+      .limit(100),
   ]);
 
   const liveTournament = tournaments?.find((t) => t.status === 'live');
   const nextTournament = tournaments?.find((t) => t.status === 'open');
   const upcomingTournaments = tournaments ?? [];
+
+  // Aggregate season points per player and take top 5
+  type TopPlayer = { profile_id: string; full_name: string; gamer_tag: string; avatar_url: string | null; total_points: number };
+  const playerMap = new Map<string, TopPlayer>();
+  for (const row of (topResults ?? [])) {
+    const profile = (row as any).profiles as { full_name: string; gamer_tag: string; avatar_url: string | null } | null;
+    if (!profile) continue;
+    const existing = playerMap.get(row.profile_id);
+    if (existing) {
+      existing.total_points += row.points;
+    } else {
+      playerMap.set(row.profile_id, {
+        profile_id: row.profile_id,
+        full_name: profile.full_name,
+        gamer_tag: profile.gamer_tag,
+        avatar_url: profile.avatar_url,
+        total_points: row.points,
+      });
+    }
+  }
+  const topPlayers = Array.from(playerMap.values())
+    .sort((a, b) => b.total_points - a.total_points)
+    .slice(0, 5);
 
   return (
     <>
@@ -443,60 +465,75 @@ export default async function Home() {
       </section>
 
       {/* ── LEADERBOARD SNAPSHOT ── */}
-      {topResults && topResults.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="font-display text-4xl text-white">TOP PLAYERS</h2>
-              <p className="text-zinc-500 mt-1">Current season leaders</p>
-            </div>
-            <Link
-              href="/leaderboard"
-              className="hidden sm:flex items-center gap-1 text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Full leaderboard <ChevronRight className="w-4 h-4" />
-            </Link>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="font-display text-4xl text-white">TOP PLAYERS</h2>
+            <p className="text-zinc-500 mt-1">Current season leaders</p>
           </div>
+          <Link
+            href="/leaderboard"
+            className="hidden sm:flex items-center gap-1 text-sm text-zinc-400 hover:text-white transition-colors"
+          >
+            Full leaderboard <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {topResults.map((result, idx) => {
-              const profile = (result as any).profiles as { full_name: string; gamer_tag: string } | null;
-              const tournament = (result as any).tournaments as { game_type: string } | null;
-              if (!profile) return null;
-
-              const medals = ['text-yellow-400', 'text-zinc-400', 'text-orange-700'];
-              const sizes = ['sm:scale-110 sm:order-none order-first', '', ''];
+        {topPlayers.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {topPlayers.map((player, idx) => {
+              const medalColors = ['text-yellow-400', 'text-zinc-300', 'text-orange-600'];
+              const isTop3 = idx < 3;
+              const highlightFirst = idx === 0;
 
               return (
                 <div
-                  key={result.profile_id}
-                  className={`flex-1 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center gap-3 text-center transition-transform ${sizes[idx]}`}
+                  key={player.profile_id}
+                  className={`bg-zinc-900 border rounded-xl p-5 flex flex-col items-center gap-3 text-center transition-all ${
+                    highlightFirst
+                      ? 'border-yellow-500/40 ring-1 ring-yellow-500/20 lg:scale-105'
+                      : 'border-zinc-800 hover:border-zinc-600'
+                  }`}
                 >
-                  <Medal className={`w-8 h-8 ${medals[idx]}`} />
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center">
-                    <span className="text-white font-black text-lg">
-                      {profile.gamer_tag[0].toUpperCase()}
-                    </span>
+                  <div className="flex items-center justify-center w-8 h-8">
+                    {isTop3
+                      ? <Medal className={`w-7 h-7 ${medalColors[idx]}`} />
+                      : <span className="text-zinc-500 font-bold text-lg">#{idx + 1}</span>
+                    }
                   </div>
-                  <div>
-                    <p className="text-white font-bold">{profile.gamer_tag}</p>
-                    <p className="text-zinc-500 text-xs">{profile.full_name}</p>
+
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                    {player.avatar_url
+                      ? <img src={player.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                      : <span className="text-white font-black text-lg">{player.gamer_tag[0].toUpperCase()}</span>
+                    }
                   </div>
-                  {tournament && (
-                    <span className={`text-xs font-semibold ${GAME_COLORS[tournament.game_type] ?? 'text-zinc-400'}`}>
-                      {tournament.game_type}
-                    </span>
-                  )}
+
+                  <div className="min-w-0 w-full">
+                    <p className="text-white font-bold text-sm truncate">{player.gamer_tag}</p>
+                    <p className="text-zinc-500 text-xs truncate">{player.full_name}</p>
+                  </div>
+
                   <div className="mt-auto pt-3 border-t border-zinc-800 w-full">
-                    <p className="text-yellow-400 font-display text-2xl">{result.points_awarded}</p>
-                    <p className="text-zinc-500 text-xs">points</p>
+                    <p className={`font-display text-2xl ${highlightFirst ? 'text-yellow-400' : 'text-zinc-200'}`}>
+                      {player.total_points.toLocaleString()}
+                    </p>
+                    <p className="text-zinc-500 text-xs">season points</p>
                   </div>
                 </div>
               );
             })}
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="text-center py-16 bg-zinc-900 border border-zinc-800 rounded-2xl">
+            <Trophy className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+            <p className="text-zinc-500 text-sm">Season rankings will appear here once tournaments are completed.</p>
+            <Link href="/tournaments" className="inline-flex items-center gap-1.5 mt-4 text-red-400 hover:text-red-300 text-sm font-semibold transition-colors">
+              Browse tournaments <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+      </section>
 
       {/* ── ARCADE MAP ── */}
       {arcades && arcades.length > 0 && (

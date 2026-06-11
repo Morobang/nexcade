@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { LogOut, LayoutDashboard, Menu, X, ShieldCheck, ChevronDown } from 'lucide-react';
+import { LogOut, LayoutDashboard, Menu, X, ShieldCheck, ChevronDown, Building2 } from 'lucide-react';
 
 const NAV_LINKS = [
   { href: '/tournaments', label: 'Tournaments' },
@@ -71,7 +71,8 @@ export function Navbar() {
     ? profile.full_name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
     : '';
 
-  const isAdmin = profile?.role === 'arcade_owner' || profile?.role === 'platform_admin';
+  const isArcadeOwner = profile?.role === 'arcade_owner';
+  const isPlatformAdmin = profile?.role === 'platform_admin';
 
   return (
     <nav className="bg-zinc-950 border-b border-zinc-800 sticky top-0 z-[1001]">
@@ -102,13 +103,22 @@ export function Navbar() {
             {session !== undefined && (
               session && profile ? (
                 <div className="hidden md:flex items-center gap-2">
-                  {isAdmin && (
+                  {isArcadeOwner && (
                     <Link
                       href="/admin"
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/20 text-xs font-bold transition-colors"
                     >
-                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <Building2 className="w-3.5 h-3.5" />
                       Admin
+                    </Link>
+                  )}
+                  {isPlatformAdmin && (
+                    <Link
+                      href="/platform"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-bold transition-colors"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Platform
                     </Link>
                   )}
 
@@ -143,14 +153,24 @@ export function Navbar() {
                             <LayoutDashboard className="w-4 h-4" />
                             Dashboard
                           </Link>
-                          {isAdmin && (
+                          {isArcadeOwner && (
                             <Link
                               href="/admin"
                               onClick={() => setDropdownOpen(false)}
                               className="flex items-center gap-3 px-4 py-2.5 text-sm text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 transition-colors"
                             >
-                              <ShieldCheck className="w-4 h-4" />
+                              <Building2 className="w-4 h-4" />
                               Admin panel
+                            </Link>
+                          )}
+                          {isPlatformAdmin && (
+                            <Link
+                              href="/platform"
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-zinc-800 transition-colors"
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                              Platform portal
                             </Link>
                           )}
                           <button
@@ -233,11 +253,18 @@ export function Navbar() {
                   <LayoutDashboard className="w-4 h-4" />
                   Dashboard
                 </Link>
-                {isAdmin && (
+                {isArcadeOwner && (
                   <Link href="/admin" onClick={closeMobile}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 font-medium text-sm transition-colors">
-                    <ShieldCheck className="w-4 h-4" />
+                    <Building2 className="w-4 h-4" />
                     Admin panel
+                  </Link>
+                )}
+                {isPlatformAdmin && (
+                  <Link href="/platform" onClick={closeMobile}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-zinc-800 font-medium text-sm transition-colors">
+                    <ShieldCheck className="w-4 h-4" />
+                    Platform portal
                   </Link>
                 )}
                 <button onClick={handleSignOut}

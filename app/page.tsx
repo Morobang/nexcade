@@ -56,7 +56,7 @@ export default async function Home() {
       .limit(6),
     serverSupabase
       .from('arcades')
-      .select('id, name, slug, city, games_supported, description, latitude, longitude')
+      .select('id, name, slug, city, games_supported, description, latitude, longitude, tournaments(count)')
       .eq('is_active', true)
       .order('name'),
     serverSupabase
@@ -74,6 +74,13 @@ export default async function Home() {
   const liveTournament = tournaments?.find((t) => t.status === 'live');
   const nextTournament = tournaments?.find((t) => t.status === 'open');
   const upcomingTournaments = tournaments ?? [];
+
+  // Sort arcades by tournament count so featured section shows most active venues
+  const sortedArcades = (arcades ?? []).slice().sort((a, b) => {
+    const aCount = (a as any).tournaments?.[0]?.count ?? 0;
+    const bCount = (b as any).tournaments?.[0]?.count ?? 0;
+    return bCount - aCount;
+  });
 
   // Aggregate season points per player and take top 5
   type TopPlayer = { profile_id: string; full_name: string; gamer_tag: string; avatar_url: string | null; total_points: number };
@@ -379,7 +386,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {arcades.slice(0, 4).map((arcade) => (
+            {sortedArcades.slice(0, 4).map((arcade) => (
               <Link
                 key={arcade.id}
                 href={`/arcades/${arcade.slug}`}

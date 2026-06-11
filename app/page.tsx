@@ -494,8 +494,9 @@ export default async function Home() {
               const highlightFirst = idx === 0;
 
               return (
-                <div
+                <Link
                   key={player.profile_id}
+                  href={`/profile/${player.profile_id}`}
                   className={`bg-zinc-900 border rounded-xl p-5 flex flex-col items-center gap-3 text-center transition-all ${
                     highlightFirst
                       ? 'border-yellow-500/40 ring-1 ring-yellow-500/20 lg:scale-105'
@@ -509,7 +510,7 @@ export default async function Home() {
                     }
                   </div>
 
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center overflow-hidden shrink-0">
                     {player.avatar_url
                       ? <img src={player.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
                       : <span className="text-white font-black text-lg">{player.gamer_tag[0].toUpperCase()}</span>
@@ -527,7 +528,7 @@ export default async function Home() {
                     </p>
                     <p className="text-zinc-500 text-xs">season points</p>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

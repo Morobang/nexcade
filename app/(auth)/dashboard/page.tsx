@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +9,7 @@ import { formatDate } from '@/lib/utils';
 import {
   LayoutDashboard, Trophy, Clock, History, Settings, LogOut,
   Loader2, AlertCircle, CheckCircle2, Star, Gift, Gamepad2,
-  Calendar, MapPin, User, Phone, Tag,
+  Calendar, MapPin, User, Phone, Tag, Upload, Camera,
 } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -294,11 +294,24 @@ function SettingsTab({ profile, arcades, onSaved }: { profile: Profile; arcades:
   const [gamerTag, setGamerTag] = useState(profile.gamer_tag);
   const [phone, setPhone] = useState(profile.phone ?? '');
   const [homeArcadeId, setHomeArcadeId] = useState(profile.home_arcade_id ?? '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>(profile.avatar_url ?? '');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inputClass = 'w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-red-500 transition-colors';
+  const initials = profile.full_name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { setError('Image must be under 2 MB.'); return; }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setError('');
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -308,9 +321,26 @@ function SettingsTab({ profile, arcades, onSaved }: { profile: Profile; arcades:
       setError('Gamer tag must be 3–20 characters, letters/numbers/underscores only.'); return;
     }
     setSaving(true);
+
+    let avatar_url = profile.avatar_url;
+    if (avatarFile) {
+      const ext = avatarFile.name.split('.').pop()?.toLowerCase() ?? 'jpg';
+      const path = `${profile.id}.${ext}`;
+      const { data: uploadData, error: uploadErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+      if (uploadErr || !uploadData) {
+        setError('Avatar upload failed. Make sure the "avatars" storage bucket exists in Supabase.');
+        setSaving(false); return;
+      }
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(uploadData.path);
+      avatar_url = publicUrl;
+    }
+
     const { error: err } = await supabase.from('profiles').update({
       full_name: fullName.trim(), gamer_tag: gamerTag.trim(),
       phone: phone.trim() || null, home_arcade_id: homeArcadeId || null,
+      avatar_url,
       updated_at: new Date().toISOString(),
     }).eq('id', profile.id);
 
@@ -318,7 +348,8 @@ function SettingsTab({ profile, arcades, onSaved }: { profile: Profile; arcades:
       setError(err.message.includes('gamer_tag') ? 'That gamer tag is already taken.' : err.message);
       setSaving(false); return;
     }
-    onSaved({ ...profile, full_name: fullName.trim(), gamer_tag: gamerTag.trim(), phone: phone.trim() || null, home_arcade_id: homeArcadeId || null });
+    onSaved({ ...profile, full_name: fullName.trim(), gamer_tag: gamerTag.trim(), phone: phone.trim() || null, home_arcade_id: homeArcadeId || null, avatar_url: avatar_url ?? null });
+    setAvatarFile(null);
     setSuccess(true); setSaving(false);
   }
 
@@ -336,6 +367,48 @@ function SettingsTab({ profile, arcades, onSaved }: { profile: Profile; arcades:
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />{error}
           </div>
         )}
+
+        {/* Avatar */}
+        <div className="flex items-center gap-5 pb-5 border-b border-zinc-800">
+          <div className="relative shrink-0">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center overflow-hidden shadow-lg shadow-red-600/20">
+              {avatarPreview
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+                : <span className="text-white font-black text-2xl">{initials}</span>}
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:bg-zinc-700 transition-colors"
+            >
+              <Camera className="w-3.5 h-3.5 text-zinc-300" />
+            </button>
+          </div>
+          <div>
+            <p className="text-white font-semibold text-sm mb-1">Profile picture</p>
+            <p className="text-zinc-500 text-xs mb-2">JPG, PNG or WebP — max 2 MB</p>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-xs font-semibold transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              {avatarFile ? 'Change photo' : 'Upload photo'}
+            </button>
+            {avatarFile && (
+              <p className="text-xs text-zinc-500 mt-1.5">{avatarFile.name}</p>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <SField label="Full name" icon={User}>
             <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputClass} />

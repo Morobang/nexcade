@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 type Arcade = { id: string; name: string; city: string; is_active: boolean };
+type AppStatus = 'pending' | 'approved' | 'rejected' | null;
 
 type Stats = {
   totalRegistrations: number;
@@ -33,6 +34,8 @@ const QUICK_LINKS = [
 export default function AdminOverviewPage() {
   const router = useRouter();
   const [arcade, setArcade] = useState<Arcade | null>(null);
+  const [appStatus, setAppStatus] = useState<AppStatus>(null);
+  const [appRejectionReason, setAppRejectionReason] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
@@ -68,6 +71,17 @@ export default function AdminOverviewPage() {
       }
 
       setArcade(arcadeData);
+
+      // Fetch application status to show correct review banner
+      const { data: appData } = await supabase
+        .from('arcade_applications')
+        .select('status, rejection_reason')
+        .eq('profile_id', user.id)
+        .single();
+      if (appData) {
+        setAppStatus(appData.status as AppStatus);
+        setAppRejectionReason(appData.rejection_reason ?? null);
+      }
 
       // Fetch all tournaments for this arcade
       const { data: tournaments } = await supabase
@@ -155,13 +169,31 @@ export default function AdminOverviewPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-      {/* Pending review banner */}
-      {!arcade!.is_active && (
+      {/* Application status banner */}
+      {!arcade!.is_active && appStatus === 'pending' && (
         <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl mb-6 text-sm text-yellow-300">
           <Clock className="w-4 h-4 mt-0.5 shrink-0 text-yellow-400" />
           <div>
             <span className="font-semibold">Your arcade is under review.</span>
             {' '}You can explore and set up your admin panel now — your arcade will become visible to players once our team approves it (usually within 1–3 business days).
+          </div>
+        </div>
+      )}
+      {!arcade!.is_active && appStatus === 'rejected' && (
+        <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl mb-6 text-sm text-red-300">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold text-red-200">Your arcade application was not approved.</span>
+            {appRejectionReason && (
+              <span className="text-red-400">Reason: {appRejectionReason}</span>
+            )}
+            <span>
+              Contact us at{' '}
+              <a href="mailto:support@nexcade.co.za" className="underline hover:text-red-200 transition-colors">
+                support@nexcade.co.za
+              </a>{' '}
+              to resolve this or reapply.
+            </span>
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { LogOut, LayoutDashboard, Menu, X, ShieldCheck, ChevronDown, Building2 } from 'lucide-react';
@@ -30,6 +30,7 @@ type UserProfile = {
 
 export function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,7 +51,7 @@ export function Navbar() {
       .eq('id', session.user.id)
       .single()
       .then(({ data }) => setProfile(data as UserProfile | null));
-  }, [session]);
+  }, [session, pathname]);
 
   // Close dropdown on outside click
   useEffect(() => {

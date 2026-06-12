@@ -395,7 +395,7 @@ function PhotoSection({ profile, onSaved }: { profile: Profile; onSaved: (p: Pro
 
   return (
     <div className="flex flex-col gap-6">
-      <SectionHeader title="Add / change photo" subtitle="JPG, PNG or WebP · max 2 MB" />
+      <SectionHeader title="Photo" subtitle="Add a nice photo of yourself for your profile." />
 
       {success && (
         <div className="flex items-center gap-3 p-4 bg-green-900/30 border border-green-700/50 rounded-xl text-sm text-green-300">
@@ -408,44 +408,51 @@ function PhotoSection({ profile, onSaved }: { profile: Profile; onSaved: (p: Pro
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start gap-8">
-        {/* Avatar preview */}
-        <div className="shrink-0">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center overflow-hidden ring-4 ring-zinc-800">
+      {/* Large preview box — mirrors Udemy's rectangular container with circle inside */}
+      <div>
+        <p className="text-sm font-semibold text-zinc-400 mb-2">Image preview</p>
+        <div className="w-full bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-center py-10">
+          <div className="w-36 h-36 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center overflow-hidden ring-4 ring-zinc-700">
             {preview
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={preview} alt="" className="w-full h-full object-cover" />
-              : <span className="text-white font-black text-4xl">{initials}</span>}
+              : <span className="text-white font-black text-5xl">{initials}</span>}
           </div>
         </div>
+      </div>
 
-        {/* Upload controls */}
-        <div className="flex flex-col gap-3 pt-2">
+      {/* File input row — mirrors Udemy's "No file selected" + "Upload image" button */}
+      <div>
+        <p className="text-sm font-semibold text-zinc-400 mb-2">Add / Change Image</p>
+        <div className="flex gap-0 rounded-xl overflow-hidden border border-zinc-700">
+          <div className="flex-1 px-4 py-2.5 bg-zinc-900 text-zinc-500 text-sm flex items-center truncate">
+            {avatarFile ? avatarFile.name : 'No file selected'}
+          </div>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-zinc-600 text-zinc-300 hover:border-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+            className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 border-l border-zinc-700 text-zinc-200 text-sm font-semibold transition-colors shrink-0 flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
-            {avatarFile ? 'Change photo' : 'Upload photo'}
+            Upload image
           </button>
-          {avatarFile && (
-            <p className="text-xs text-zinc-500">{avatarFile.name}</p>
-          )}
-          {avatarFile && (
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-bold transition-colors"
-            >
-              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {saving ? 'Saving…' : 'Save photo'}
-            </button>
-          )}
-          <p className="text-xs text-zinc-600">Minimum 200×200px recommended. Square photos work best.</p>
         </div>
+        <p className="text-xs text-zinc-600 mt-2">JPG, PNG or WebP · max 2 MB · min 200×200 px</p>
       </div>
+
+      {/* Save */}
+      <div>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !avatarFile}
+          className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white font-bold text-sm transition-colors flex items-center gap-2"
+        >
+          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
     </div>
   );

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import {
   LogOut, LayoutDashboard, Menu, X, ShieldCheck,
-  ChevronDown, Building2, Bell, Sun, Moon, Settings,
+  Building2, Bell, Sun, Moon, Settings,
   Trophy, History, MessageSquare,
 } from 'lucide-react';
 
@@ -84,7 +84,7 @@ export function Navbar() {
   const isDark = !mounted || resolvedTheme !== 'light';
 
   return (
-    <nav className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-[1001]">
+    <nav className="bg-page border-b border-stroke sticky top-0 z-[1001]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
@@ -93,7 +93,7 @@ export function Navbar() {
             <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-black text-lg">N</span>
             </div>
-            <span className="text-xl font-black text-zinc-900 dark:text-white hidden sm:inline">NexCade</span>
+            <span className="text-xl font-black text-fg hidden sm:inline">NexCade</span>
           </Link>
 
           {/* Nav links — desktop */}
@@ -102,7 +102,7 @@ export function Navbar() {
               <Link
                 key={href}
                 href={href}
-                className="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors font-medium text-sm whitespace-nowrap"
+                className="text-fg-2 hover:text-fg transition-colors font-medium text-sm whitespace-nowrap"
               >
                 {label}
               </Link>
@@ -112,11 +112,11 @@ export function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-1">
 
-            {/* Theme toggle */}
+            {/* Theme toggle — desktop */}
             {mounted && (
               <button
                 onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
                 aria-label="Toggle theme"
               >
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -141,7 +141,7 @@ export function Navbar() {
                   {isPlatformAdmin && (
                     <Link
                       href="/platform"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 hover:bg-red-500/20 text-xs font-bold transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 text-xs font-bold transition-colors"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       Platform
@@ -150,7 +150,7 @@ export function Navbar() {
 
                   {/* Notification bell */}
                   <button
-                    className="flex items-center justify-center w-9 h-9 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="flex items-center justify-center w-9 h-9 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
                     aria-label="Notifications"
                   >
                     <Bell className="w-4 h-4" />
@@ -169,10 +169,10 @@ export function Navbar() {
                     </button>
 
                     {dropdownOpen && (
-                      <div className="absolute right-0 top-full mt-3 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50">
+                      <div className="absolute right-0 top-full mt-3 w-72 bg-surface border border-stroke rounded-xl shadow-2xl overflow-hidden z-50">
 
                         {/* Profile header */}
-                        <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
+                        <div className="px-5 py-4 border-b border-stroke flex items-center gap-4">
                           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
                             {profile.avatar_url
                               ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
@@ -180,10 +180,10 @@ export function Navbar() {
                             }
                           </div>
                           <div className="min-w-0">
-                            <p className="text-zinc-900 dark:text-white font-bold text-base truncate">{profile.gamer_tag}</p>
-                            <p className="text-zinc-500 text-xs truncate">{profile.full_name}</p>
+                            <p className="text-fg font-bold text-base truncate">{profile.gamer_tag}</p>
+                            <p className="text-fg-3 text-xs truncate">{profile.full_name}</p>
                             {session?.user.email && (
-                              <p className="text-zinc-400 text-xs truncate mt-0.5">{session.user.email}</p>
+                              <p className="text-fg-3 text-xs truncate mt-0.5">{session.user.email}</p>
                             )}
                           </div>
                         </div>
@@ -196,33 +196,33 @@ export function Navbar() {
                         </div>
 
                         {/* Social */}
-                        <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                        <div className="border-t border-stroke py-1">
                           <DropItemBadge href="/dashboard" icon={Bell} label="Notifications" badge={0} onClick={() => setDropdownOpen(false)} />
                           <DropItemBadge href="/dashboard" icon={MessageSquare} label="Messages" badge={0} onClick={() => setDropdownOpen(false)} />
                         </div>
 
                         {/* Account */}
-                        <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                        <div className="border-t border-stroke py-1">
                           <DropItem href="/settings" icon={Settings} label="Account settings" onClick={() => setDropdownOpen(false)} />
                         </div>
 
                         {/* Role-based */}
                         {(isArcadeOwner || isPlatformAdmin) && (
-                          <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                          <div className="border-t border-stroke py-1">
                             {isArcadeOwner && (
                               <DropItem href="/admin" icon={Building2} label="Arcade admin panel" onClick={() => setDropdownOpen(false)} className="text-yellow-600 dark:text-yellow-400" />
                             )}
                             {isPlatformAdmin && (
-                              <DropItem href="/platform" icon={ShieldCheck} label="Platform portal" onClick={() => setDropdownOpen(false)} className="text-red-500 dark:text-red-400" />
+                              <DropItem href="/platform" icon={ShieldCheck} label="Platform portal" onClick={() => setDropdownOpen(false)} className="text-red-500" />
                             )}
                           </div>
                         )}
 
                         {/* Sign out */}
-                        <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                        <div className="border-t border-stroke py-1">
                           <button
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors w-full text-left"
+                            className="flex items-center gap-3 px-5 py-3 text-sm text-fg-3 hover:text-fg hover:bg-elevated transition-colors w-full text-left"
                           >
                             <LogOut className="w-4 h-4 shrink-0" />
                             Log out
@@ -236,7 +236,7 @@ export function Navbar() {
                 <div className="hidden md:flex items-center gap-3">
                   <Link
                     href="/login"
-                    className="px-4 py-2 text-zinc-600 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors font-medium text-sm"
+                    className="px-4 py-2 text-fg-2 hover:text-fg transition-colors font-medium text-sm"
                   >
                     Login
                   </Link>
@@ -253,7 +253,7 @@ export function Navbar() {
             {/* Hamburger — mobile */}
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden p-2 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="md:hidden p-2 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -265,12 +265,12 @@ export function Navbar() {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+        <div className="md:hidden border-t border-stroke bg-page">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
 
             {/* User info — mobile */}
             {session && profile && (
-              <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-zinc-50 dark:bg-zinc-900 rounded-xl">
+              <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-surface rounded-xl">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
                   {profile.avatar_url
                     ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
@@ -278,8 +278,8 @@ export function Navbar() {
                   }
                 </div>
                 <div>
-                  <p className="text-zinc-900 dark:text-white font-bold text-sm">{profile.gamer_tag}</p>
-                  <p className="text-zinc-500 text-xs">{profile.full_name}</p>
+                  <p className="text-fg font-bold text-sm">{profile.gamer_tag}</p>
+                  <p className="text-fg-3 text-xs">{profile.full_name}</p>
                 </div>
               </div>
             )}
@@ -290,19 +290,19 @@ export function Navbar() {
                 key={href}
                 href={href}
                 onClick={closeMobile}
-                className="px-4 py-3 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors"
+                className="px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors"
               >
                 {label}
               </Link>
             ))}
 
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-2" />
+            <div className="h-px bg-stroke my-2" />
 
             {/* Theme toggle — mobile */}
             {mounted && (
               <button
                 onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors w-full text-left"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors w-full text-left"
               >
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 {isDark ? 'Light mode' : 'Dark mode'}
@@ -312,31 +312,31 @@ export function Navbar() {
             {session ? (
               <>
                 <Link href="/dashboard" onClick={closeMobile}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors">
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors">
                   <LayoutDashboard className="w-4 h-4" />
                   My Dashboard
                 </Link>
                 <Link href="/settings" onClick={closeMobile}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors">
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors">
                   <Settings className="w-4 h-4" />
                   Account settings
                 </Link>
                 {isArcadeOwner && (
                   <Link href="/admin" onClick={closeMobile}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-yellow-600 dark:text-yellow-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors">
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-yellow-600 dark:text-yellow-400 hover:bg-elevated font-medium text-sm transition-colors">
                     <Building2 className="w-4 h-4" />
                     Admin panel
                   </Link>
                 )}
                 {isPlatformAdmin && (
                   <Link href="/platform" onClick={closeMobile}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors">
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-elevated font-medium text-sm transition-colors">
                     <ShieldCheck className="w-4 h-4" />
                     Platform portal
                   </Link>
                 )}
                 <button onClick={handleSignOut}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors w-full text-left">
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-3 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors w-full text-left">
                   <LogOut className="w-4 h-4" />
                   Log out
                 </button>
@@ -344,7 +344,7 @@ export function Navbar() {
             ) : (
               <div className="flex gap-3 pt-1">
                 <Link href="/login" onClick={closeMobile}
-                  className="flex-1 text-center px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 font-semibold text-sm transition-colors">
+                  className="flex-1 text-center px-4 py-3 rounded-xl border border-stroke text-fg-2 hover:text-fg font-semibold text-sm transition-colors">
                   Login
                 </Link>
                 <Link href="/signup" onClick={closeMobile}
@@ -375,8 +375,8 @@ function DropItem({
     <Link
       href={href}
       onClick={onClick}
-      className={`flex items-center gap-3 px-5 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors ${
-        className || 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white'
+      className={`flex items-center gap-3 px-5 py-3 text-sm hover:bg-elevated transition-colors ${
+        className || 'text-fg-2 hover:text-fg'
       }`}
     >
       <Icon className="w-4 h-4 shrink-0" />
@@ -398,7 +398,7 @@ function DropItemBadge({
     <Link
       href={href}
       onClick={onClick}
-      className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+      className="flex items-center gap-3 px-5 py-3 text-sm text-fg-2 hover:text-fg hover:bg-elevated transition-colors"
     >
       <Icon className="w-4 h-4 shrink-0" />
       <span className="flex-1">{label}</span>

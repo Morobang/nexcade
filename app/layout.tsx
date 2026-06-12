@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${bebasNeue.variable} ${barlow.variable} antialiased`}>
-      <body className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
+      <body className="min-h-screen bg-page text-fg flex flex-col">
         <ThemeProvider>
           <ToastProvider>
             <Navbar />

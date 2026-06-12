@@ -152,7 +152,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Horizontal tab bar ── */}
-      <div className="flex gap-0 border-b border-zinc-800 mb-8 overflow-x-auto">
+      <div className="flex gap-0 border-b border-stroke mb-8 overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}

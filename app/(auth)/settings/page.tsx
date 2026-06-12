@@ -92,7 +92,7 @@ export default function SettingsPage() {
         <aside className="lg:w-56 shrink-0">
 
           {/* Avatar + name */}
-          <div className="flex lg:flex-col items-center lg:text-center gap-4 mb-6 pb-6 border-b border-zinc-800">
+          <div className="flex lg:flex-col items-center lg:text-center gap-4 mb-6 pb-6 border-b border-stroke">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
               {profile.avatar_url
                 // eslint-disable-next-line @next/next/no-img-element
@@ -113,17 +113,17 @@ export default function SettingsPage() {
               <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               View public profile
             </Link>
-            <div className="h-px bg-zinc-800 my-1" />
+            <div className="h-px bg-stroke my-1" />
             {NAV_SECTIONS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setSection(id)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-left transition-colors w-full ${
                   section === id
-                    ? 'bg-zinc-800 text-white'
+                    ? 'bg-elevated text-fg'
                     : id === 'close-account'
-                    ? 'text-red-400 hover:bg-zinc-900 hover:text-red-300'
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                    ? 'text-red-400 hover:bg-surface hover:text-red-300'
+                    : 'text-fg-3 hover:bg-surface hover:text-fg-2'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />

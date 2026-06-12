@@ -4,29 +4,59 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Brand colors — available as bg-fire, text-gold, border-cyan, etc. */
+  /* Brand colors */
   --color-fire: #ff4500;
   --color-gold: #f59e0b;
   --color-neon-green: #22c55e;
   --color-cyan: #22d3ee;
 
+  /* Semantic colors — reference the runtime CSS vars below.
+     Tailwind generates bg-page, text-fg, border-stroke, etc. */
+  --color-page:           var(--c-bg);
+  --color-surface:        var(--c-surface);
+  --color-elevated:       var(--c-elevated);
+  --color-stroke:         var(--c-border);
+  --color-stroke-subtle:  var(--c-border-subtle);
+  --color-fg:             var(--c-fg);
+  --color-fg-2:           var(--c-fg-2);
+  --color-fg-3:           var(--c-fg-3);
+
   /* Fonts */
   --font-display: var(--font-bebas), sans-serif;
-  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-sans:    var(--font-barlow), system-ui, sans-serif;
 }
 
+/* ── Dark theme (default) ──────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
+
+  --c-bg:             #09090b;   /* zinc-950 */
+  --c-surface:        #18181b;   /* zinc-900 */
+  --c-elevated:       #27272a;   /* zinc-800 */
+  --c-border:         #27272a;   /* zinc-800 */
+  --c-border-subtle:  #18181b;   /* zinc-900 */
+
+  --c-fg:   #f4f4f5;   /* zinc-100  — primary text   */
+  --c-fg-2: #a1a1aa;   /* zinc-400  — secondary text */
+  --c-fg-3: #71717a;   /* zinc-500  — muted text     */
 }
 
-/*
- * Light mode: flip the zinc scale so every bg-zinc-*, text-zinc-*, border-zinc-*
- * class across the entire app adapts without touching any component.
- * dark end (950→900→800) becomes light surfaces; light end (100→50) becomes dark text.
- */
+/* ── Light theme ───────────────────────────────────────────────────────────── */
 html.light {
   color-scheme: light;
 
+  --c-bg:             #ffffff;
+  --c-surface:        #f4f4f5;   /* zinc-100 */
+  --c-elevated:       #e4e4e7;   /* zinc-200 */
+  --c-border:         #e4e4e7;   /* zinc-200 */
+  --c-border-subtle:  #f4f4f5;   /* zinc-100 */
+
+  --c-fg:   #09090b;   /* near black — primary text   */
+  --c-fg-2: #52525b;   /* zinc-600   — secondary text */
+  --c-fg-3: #71717a;   /* zinc-500   — muted text     */
+
+  /* Flip zinc scale so all existing bg-zinc-*, text-zinc-*, border-zinc-*
+     classes adapt without touching every component. */
   --color-zinc-950: #ffffff;
   --color-zinc-900: #f4f4f5;
   --color-zinc-800: #e4e4e7;
@@ -40,7 +70,16 @@ html.light {
   --color-zinc-50:  #09090b;
 }
 
-/* Subtle noise grain overlay — hidden in light mode */
+/* ── Global text-white fix ───────────────────────────────────────────────────
+   In light mode, text-white on neutral surfaces becomes dark.
+   Elements WITH a bg-* or from-* class (buttons, badges, gradient containers)
+   are excluded — their text stays white for contrast on the coloured background.
+*/
+html.light .text-white:not([class*=" bg-"]):not([class^="bg-"]):not([class*=" from-"]):not([class^="from-"]) {
+  color: var(--c-fg);
+}
+
+/* ── Noise grain — dark mode only ──────────────────────────────────────────── */
 body::before {
   content: '';
   position: fixed;

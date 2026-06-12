@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import {
   LogOut, LayoutDashboard, Menu, X, ShieldCheck,
   ChevronDown, Building2, Bell, Sun, Moon, Settings,
+  Trophy, History, MessageSquare,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -170,7 +171,7 @@ export function Navbar() {
                     {dropdownOpen && (
                       <div className="absolute right-0 top-full mt-3 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50">
 
-                        {/* Profile header — big avatar + name + email */}
+                        {/* Profile header */}
                         <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
                           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
                             {profile.avatar_url
@@ -187,48 +188,32 @@ export function Navbar() {
                           </div>
                         </div>
 
-                        {/* Primary links */}
+                        {/* My activity */}
                         <div className="py-1">
-                          <Link
-                            href="/dashboard"
-                            onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                          >
-                            <LayoutDashboard className="w-4 h-4 shrink-0" />
-                            My Dashboard
-                          </Link>
-                          <Link
-                            href="/dashboard"
-                            onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                          >
-                            <Settings className="w-4 h-4 shrink-0" />
-                            Account settings
-                          </Link>
+                          <DropItem href="/dashboard" icon={LayoutDashboard} label="My Dashboard" onClick={() => setDropdownOpen(false)} />
+                          <DropItem href="/dashboard?tab=tournaments" icon={Trophy} label="My Tournaments" onClick={() => setDropdownOpen(false)} />
+                          <DropItem href="/dashboard?tab=history" icon={History} label="Match History" onClick={() => setDropdownOpen(false)} />
                         </div>
 
-                        {/* Role-based links */}
+                        {/* Social */}
+                        <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                          <DropItemBadge href="/dashboard" icon={Bell} label="Notifications" badge={0} onClick={() => setDropdownOpen(false)} />
+                          <DropItemBadge href="/dashboard" icon={MessageSquare} label="Messages" badge={0} onClick={() => setDropdownOpen(false)} />
+                        </div>
+
+                        {/* Account */}
+                        <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                          <DropItem href="/dashboard?tab=settings" icon={Settings} label="Account settings" onClick={() => setDropdownOpen(false)} />
+                        </div>
+
+                        {/* Role-based */}
                         {(isArcadeOwner || isPlatformAdmin) && (
                           <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
                             {isArcadeOwner && (
-                              <Link
-                                href="/admin"
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-3 px-5 py-3 text-sm text-yellow-600 dark:text-yellow-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                              >
-                                <Building2 className="w-4 h-4 shrink-0" />
-                                Arcade admin panel
-                              </Link>
+                              <DropItem href="/admin" icon={Building2} label="Arcade admin panel" onClick={() => setDropdownOpen(false)} className="text-yellow-600 dark:text-yellow-400" />
                             )}
                             {isPlatformAdmin && (
-                              <Link
-                                href="/platform"
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-3 px-5 py-3 text-sm text-red-500 dark:text-red-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                              >
-                                <ShieldCheck className="w-4 h-4 shrink-0" />
-                                Platform portal
-                              </Link>
+                              <DropItem href="/platform" icon={ShieldCheck} label="Platform portal" onClick={() => setDropdownOpen(false)} className="text-red-500 dark:text-red-400" />
                             )}
                           </div>
                         )}
@@ -372,5 +357,56 @@ export function Navbar() {
         </div>
       )}
     </nav>
+  );
+}
+
+// ── Dropdown helpers ──────────────────────────────────────────────────────────
+
+function DropItem({
+  href, icon: Icon, label, onClick, className = '',
+}: {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`flex items-center gap-3 px-5 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors ${
+        className || 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white'
+      }`}
+    >
+      <Icon className="w-4 h-4 shrink-0" />
+      {label}
+    </Link>
+  );
+}
+
+function DropItemBadge({
+  href, icon: Icon, label, badge, onClick,
+}: {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  badge: number;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+    >
+      <Icon className="w-4 h-4 shrink-0" />
+      <span className="flex-1">{label}</span>
+      {badge > 0 && (
+        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
+          {badge}
+        </span>
+      )}
+    </Link>
   );
 }

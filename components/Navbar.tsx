@@ -11,6 +11,7 @@ import {
   Building2, Bell, Sun, Moon, Settings,
   Trophy, History, MessageSquare,
 } from 'lucide-react';
+import { SearchTrigger, GlobalSearch } from '@/components/GlobalSearch';
 
 const GUEST_NAV = [
   { href: '/tournaments', label: 'Tournaments' },
@@ -43,9 +44,21 @@ export function Navbar() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setSession(s));
@@ -113,6 +126,9 @@ export function Navbar() {
               </Link>
             ))}
           </div>
+
+          {/* Search trigger */}
+          <SearchTrigger onClick={() => setSearchOpen(true)} />
 
           {/* Right side */}
           <div className="flex items-center gap-1">
@@ -258,6 +274,8 @@ export function Navbar() {
         </div>
       </div>
     </nav>
+
+    <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
   );
 }
 

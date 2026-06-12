@@ -14,6 +14,7 @@ import {
   Radio,
   Clock,
 } from 'lucide-react';
+import { LivePageCTA } from '@/components/PageRoleCTAs';
 
 export const metadata: Metadata = {
   title: 'Live',
@@ -128,9 +129,12 @@ export default async function LivePage() {
               <Tv className="w-16 h-16 text-zinc-700" />
             </div>
             <h2 className="font-display text-3xl text-white mb-3">NO STREAMS LIVE RIGHT NOW</h2>
-            <p className="text-zinc-500 mb-8">
-              NexCade tournaments are streamed live from arcades across SA. Check back soon or register for an upcoming event.
+            <p className="text-zinc-500 mb-6">
+              NexCade tournaments are streamed live from arcades across SA. Check back soon or catch the next one.
             </p>
+            <div className="mb-8">
+              <LivePageCTA />
+            </div>
 
             {nextStream ? (
               <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 text-left">

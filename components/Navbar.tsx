@@ -102,6 +102,7 @@ export function Navbar() {
   const navLinks = session ? AUTH_NAV : GUEST_NAV;
 
   return (
+    <>
     <nav className="bg-page border-b border-stroke sticky top-0 z-[1001]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -276,6 +277,7 @@ export function Navbar() {
     </nav>
 
     <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }
 

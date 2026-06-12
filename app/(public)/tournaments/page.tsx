@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { TournamentFilters } from '@/components/TournamentFilters';
 import { MapPin, Calendar, Users, Clock, Tv, Gamepad2 } from 'lucide-react';
+import { TournamentPageCTA } from '@/components/PageRoleCTAs';
 
 export const metadata: Metadata = {
   title: 'Tournaments',
@@ -111,6 +112,9 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
           )}
         </div>
       </div>
+
+      {/* Role-aware CTA */}
+      <TournamentPageCTA />
 
       {/* Filters */}
       <div className="mb-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl">

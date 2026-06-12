@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { serverSupabase } from '@/lib/supabase-server';
 import { LeaderboardFilters } from '@/components/LeaderboardFilters';
 import { Medal, Trophy } from 'lucide-react';
+import { LeaderboardPageCTA } from '@/components/PageRoleCTAs';
 
 export const metadata: Metadata = {
   title: 'Leaderboard',
@@ -172,6 +173,8 @@ export default async function LeaderboardPage({
         <h1 className="font-display text-5xl text-white mb-2">LEADERBOARD</h1>
         <p className="text-zinc-400">National rankings across all NexCade arcades</p>
       </div>
+
+      <LeaderboardPageCTA />
 
       <Suspense>
         <LeaderboardFilters

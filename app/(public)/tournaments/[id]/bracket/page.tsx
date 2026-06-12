@@ -37,13 +37,13 @@ export default async function BracketPage({ params }: { params: Params }) {
     serverSupabase
       .from('registrations')
       .select('profile_id, profiles(id, gamer_tag, full_name)')
-      .eq('tournament_id', id)
+      .eq('tournament_id', tournament.id)
       .neq('registration_status', 'cancelled')
       .order('registered_at', { ascending: true }),
     serverSupabase
       .from('results')
       .select('profile_id, placement, is_winner')
-      .eq('tournament_id', id)
+      .eq('tournament_id', tournament.id)
       .order('placement', { ascending: true }),
   ]);
 

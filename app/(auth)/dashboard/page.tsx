@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -61,7 +61,7 @@ const STATUS_PILL: Record<string, string> = {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export default function DashboardPage() {
+function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab') as Tab | null;
@@ -483,4 +483,8 @@ function EmptyState({ message, cta }: { message: string; cta?: { label: string; 
       {cta && <Link href={cta.href} className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors">{cta.label}</Link>}
     </div>
   );
+}
+
+export default function Page() {
+  return <Suspense><DashboardPage /></Suspense>;
 }

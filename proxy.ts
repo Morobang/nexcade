@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -24,7 +24,6 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresh the session — keeps the token alive and prevents unexpected sign-outs.
-  // This is the only thing middleware should do; redirect logic lives in page components.
   await supabase.auth.getUser();
 
   return supabaseResponse;

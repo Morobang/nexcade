@@ -18,6 +18,8 @@ const PUBLIC_NAV = [
 const AUTHED_NAV = [
   { href: '/tournaments', label: 'Tournaments' },
   { href: '/arcades',     label: 'Arcades'      },
+  { href: '/leaderboard', label: 'Leaderboard'  },
+  { href: '/live',        label: 'Live'          },
   { href: '/dashboard',   label: 'Dashboard'    },
 ];
 

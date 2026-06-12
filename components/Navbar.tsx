@@ -203,7 +203,7 @@ export function Navbar() {
 
                         {/* Account */}
                         <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
-                          <DropItem href="/dashboard?tab=settings" icon={Settings} label="Account settings" onClick={() => setDropdownOpen(false)} />
+                          <DropItem href="/settings" icon={Settings} label="Account settings" onClick={() => setDropdownOpen(false)} />
                         </div>
 
                         {/* Role-based */}
@@ -316,10 +316,10 @@ export function Navbar() {
                   <LayoutDashboard className="w-4 h-4" />
                   My Dashboard
                 </Link>
-                <Link href="/dashboard" onClick={closeMobile}
+                <Link href="/settings" onClick={closeMobile}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium text-sm transition-colors">
                   <Settings className="w-4 h-4" />
-                  Settings
+                  Account settings
                 </Link>
                 {isArcadeOwner && (
                   <Link href="/admin" onClick={closeMobile}

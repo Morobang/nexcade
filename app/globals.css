@@ -70,6 +70,22 @@ html.light {
   --color-zinc-50:  #09090b;
 }
 
+/* ── Semantic bg/border/text utilities — direct var() bypass ────────────────
+   Tailwind v4 wraps @theme var() references in color-mix() at compile time,
+   which silently fails and produces a transparent result. These unlayered
+   rules override Tailwind's generated classes and use the CSS vars directly.
+*/
+.bg-page     { background-color: var(--c-bg); }
+.bg-surface  { background-color: var(--c-surface); }
+.bg-elevated { background-color: var(--c-elevated); }
+
+.border-stroke        { border-color: var(--c-border); }
+.border-stroke-subtle { border-color: var(--c-border-subtle); }
+
+.text-fg   { color: var(--c-fg); }
+.text-fg-2 { color: var(--c-fg-2); }
+.text-fg-3 { color: var(--c-fg-3); }
+
 /* ── Global text-white fix ───────────────────────────────────────────────────
    In light mode, text-white on neutral surfaces becomes dark.
    Elements WITH a bg-* or from-* class (buttons, badges, gradient containers)

@@ -15,26 +15,32 @@
   --font-sans: var(--font-barlow), system-ui, sans-serif;
 }
 
-/* Dark theme (default) */
 :root {
   color-scheme: dark;
-  --body-bg: #09090b;
-  --body-text: #f4f4f5;
 }
 
-/* Light theme */
+/*
+ * Light mode: flip the zinc scale so every bg-zinc-*, text-zinc-*, border-zinc-*
+ * class across the entire app adapts without touching any component.
+ * dark end (950→900→800) becomes light surfaces; light end (100→50) becomes dark text.
+ */
 html.light {
   color-scheme: light;
-  --body-bg: #f9fafb;
-  --body-text: #18181b;
+
+  --color-zinc-950: #ffffff;
+  --color-zinc-900: #f4f4f5;
+  --color-zinc-800: #e4e4e7;
+  --color-zinc-700: #d4d4d8;
+  --color-zinc-600: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-400: #52525b;
+  --color-zinc-300: #3f3f46;
+  --color-zinc-200: #27272a;
+  --color-zinc-100: #18181b;
+  --color-zinc-50:  #09090b;
 }
 
-body {
-  background-color: var(--body-bg);
-  color: var(--body-text);
-}
-
-/* Subtle noise grain overlay across the whole app */
+/* Subtle noise grain overlay — hidden in light mode */
 body::before {
   content: '';
   position: fixed;
@@ -45,4 +51,8 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 200px 200px;
+}
+
+html.light body::before {
+  display: none;
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Bebas_Neue, Barlow } from 'next/font/google';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { MobileTabBar } from '@/components/MobileTabBar';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
@@ -59,8 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <ToastProvider>
             <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <main className="flex-1 pb-16 md:pb-0">{children}</main>
+            <Footer className="hidden md:block" />
+            <MobileTabBar />
           </ToastProvider>
         </ThemeProvider>
       </body>

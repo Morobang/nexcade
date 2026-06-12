@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import {
-  LogOut, LayoutDashboard, Menu, X, ShieldCheck,
+  LogOut, LayoutDashboard, ShieldCheck,
   Building2, Bell, Sun, Moon, Settings,
   Trophy, History, MessageSquare,
 } from 'lucide-react';
@@ -42,7 +42,6 @@ export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -73,10 +72,7 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  function closeMobile() { setMobileOpen(false); }
-
   async function handleSignOut() {
-    closeMobile();
     setDropdownOpen(false);
     await supabase.auth.signOut();
     router.push('/');
@@ -98,14 +94,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link href="/" onClick={closeMobile} className="flex items-center gap-2 shrink-0">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-red-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-black text-lg">N</span>
             </div>
             <span className="text-xl font-black text-fg hidden sm:inline">NexCade</span>
           </Link>
 
-          {/* Nav links — desktop */}
+          {/* Nav links — desktop only */}
           <div className="hidden md:flex items-center gap-6 mx-6 flex-1">
             {navLinks.map(({ href, label }) => (
               <Link
@@ -132,16 +128,15 @@ export function Navbar() {
               </button>
             )}
 
-            {/* Auth area — desktop */}
             {session !== undefined && (
               session && profile ? (
-                <div className="hidden md:flex items-center gap-1">
+                <div className="flex items-center gap-1">
 
-                  {/* Role badges */}
+                  {/* Role badges — desktop only */}
                   {isArcadeOwner && (
                     <Link
                       href="/admin"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/20 text-xs font-bold transition-colors"
+                      className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/20 text-xs font-bold transition-colors"
                     >
                       <Building2 className="w-3.5 h-3.5" />
                       Admin
@@ -150,7 +145,7 @@ export function Navbar() {
                   {isPlatformAdmin && (
                     <Link
                       href="/platform"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 text-xs font-bold transition-colors"
+                      className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 text-xs font-bold transition-colors"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       Platform
@@ -165,7 +160,7 @@ export function Navbar() {
                     <Bell className="w-4 h-4" />
                   </button>
 
-                  {/* Avatar dropdown */}
+                  {/* Avatar dropdown — visible on all sizes */}
                   <div className="relative ml-1" ref={dropdownRef}>
                     <button
                       onClick={() => setDropdownOpen((o) => !o)}
@@ -242,129 +237,26 @@ export function Navbar() {
                   </div>
                 </div>
               ) : !session ? (
-                <div className="hidden md:flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Link
                     href="/login"
-                    className="px-4 py-2 text-fg-2 hover:text-fg transition-colors font-medium text-sm"
+                    className="px-3 py-2 text-fg-2 hover:text-fg transition-colors font-medium text-sm"
                   >
                     Login
                   </Link>
                   <Link
                     href="/signup"
-                    className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-sm"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-sm"
                   >
                     Sign Up
                   </Link>
                 </div>
               ) : null
             )}
-
-            {/* Hamburger — mobile */}
-            <button
-              onClick={() => setMobileOpen((o) => !o)}
-              className="md:hidden p-2 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
           </div>
 
         </div>
       </div>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-stroke bg-page">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
-
-            {/* User info — mobile */}
-            {session && profile && (
-              <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-surface rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
-                  {profile.avatar_url
-                    ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
-                    : <span className="text-white font-black text-sm">{initials}</span>
-                  }
-                </div>
-                <div>
-                  <p className="text-fg font-bold text-sm">{profile.gamer_tag}</p>
-                  <p className="text-fg-3 text-xs">{profile.full_name}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Nav links */}
-            {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={closeMobile}
-                className="px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors"
-              >
-                {label}
-              </Link>
-            ))}
-
-            <div className="h-px bg-stroke my-2" />
-
-            {/* Theme toggle — mobile */}
-            {mounted && (
-              <button
-                onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors w-full text-left"
-              >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                {isDark ? 'Light mode' : 'Dark mode'}
-              </button>
-            )}
-
-            {session ? (
-              <>
-                <Link href="/dashboard" onClick={closeMobile}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors">
-                  <LayoutDashboard className="w-4 h-4" />
-                  My Dashboard
-                </Link>
-                <Link href="/settings" onClick={closeMobile}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-2 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors">
-                  <Settings className="w-4 h-4" />
-                  Account settings
-                </Link>
-                {isArcadeOwner && (
-                  <Link href="/admin" onClick={closeMobile}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-yellow-600 dark:text-yellow-400 hover:bg-elevated font-medium text-sm transition-colors">
-                    <Building2 className="w-4 h-4" />
-                    Admin panel
-                  </Link>
-                )}
-                {isPlatformAdmin && (
-                  <Link href="/platform" onClick={closeMobile}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-elevated font-medium text-sm transition-colors">
-                    <ShieldCheck className="w-4 h-4" />
-                    Platform portal
-                  </Link>
-                )}
-                <button onClick={handleSignOut}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-fg-3 hover:text-fg hover:bg-elevated font-medium text-sm transition-colors w-full text-left">
-                  <LogOut className="w-4 h-4" />
-                  Log out
-                </button>
-              </>
-            ) : (
-              <div className="flex gap-3 pt-1">
-                <Link href="/login" onClick={closeMobile}
-                  className="flex-1 text-center px-4 py-3 rounded-xl border border-stroke text-fg-2 hover:text-fg font-semibold text-sm transition-colors">
-                  Login
-                </Link>
-                <Link href="/signup" onClick={closeMobile}
-                  className="flex-1 text-center px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors">
-                  Sign Up
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }

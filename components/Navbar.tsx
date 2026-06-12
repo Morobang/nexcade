@@ -12,12 +12,20 @@ import {
   Trophy, History, MessageSquare,
 } from 'lucide-react';
 
-const NAV_LINKS = [
+const GUEST_NAV = [
   { href: '/tournaments', label: 'Tournaments' },
   { href: '/arcades',     label: 'Arcades'      },
   { href: '/leaderboard', label: 'Leaderboard'  },
   { href: '/live',        label: 'Live'          },
   { href: '/news',        label: 'News'          },
+];
+
+const AUTH_NAV = [
+  { href: '/dashboard',   label: 'Dashboard'    },
+  { href: '/tournaments', label: 'Tournaments'  },
+  { href: '/arcades',     label: 'Arcades'      },
+  { href: '/leaderboard', label: 'Leaderboard'  },
+  { href: '/live',        label: 'Live'          },
 ];
 
 type UserProfile = {
@@ -82,6 +90,7 @@ export function Navbar() {
   const isArcadeOwner = profile?.role === 'arcade_owner';
   const isPlatformAdmin = profile?.role === 'platform_admin';
   const isDark = !mounted || resolvedTheme !== 'light';
+  const navLinks = session ? AUTH_NAV : GUEST_NAV;
 
   return (
     <nav className="bg-page border-b border-stroke sticky top-0 z-[1001]">
@@ -98,7 +107,7 @@ export function Navbar() {
 
           {/* Nav links — desktop */}
           <div className="hidden md:flex items-center gap-6 mx-6 flex-1">
-            {NAV_LINKS.map(({ href, label }) => (
+            {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -285,7 +294,7 @@ export function Navbar() {
             )}
 
             {/* Nav links */}
-            {NAV_LINKS.map(({ href, label }) => (
+            {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}

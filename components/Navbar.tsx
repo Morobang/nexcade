@@ -20,6 +20,7 @@ const AUTHED_NAV = [
   { href: '/arcades',     label: 'Arcades'      },
   { href: '/leaderboard', label: 'Leaderboard'  },
   { href: '/live',        label: 'Live'          },
+  { href: '/news',        label: 'News'          },
   { href: '/dashboard',   label: 'Dashboard'    },
 ];
 

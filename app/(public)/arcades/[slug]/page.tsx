@@ -19,6 +19,7 @@ import {
   Tv,
   Clock,
 } from 'lucide-react';
+import { ArcadeCTA } from '@/components/ArcadeCTA';
 
 const GAME_COLORS: Record<string, string> = {
   FC26: 'text-orange-400',
@@ -321,19 +322,7 @@ export default async function ArcadeProfilePage(
           )}
 
           {/* CTA */}
-          <div className="bg-gradient-to-br from-red-600/20 to-zinc-900 border border-red-900/50 rounded-xl p-6 text-center">
-            <Trophy className="w-8 h-8 text-red-500 mx-auto mb-3" />
-            <h3 className="text-white font-bold mb-2">Ready to compete?</h3>
-            <p className="text-zinc-400 text-sm mb-4">
-              Register for a tournament at {arcade.name} and start earning NexCade points.
-            </p>
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center w-full px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-sm"
-            >
-              Create Account — Free
-            </Link>
-          </div>
+          <ArcadeCTA arcadeName={arcade.name} />
         </div>
       </div>
     </div>

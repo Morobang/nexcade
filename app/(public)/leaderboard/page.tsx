@@ -24,6 +24,7 @@ type PlayerRow = {
   id: string;
   gamer_tag: string;
   full_name: string;
+  avatar_url: string | null;
   points: number;
   wins: number;
   played: number;
@@ -41,12 +42,16 @@ function PodiumCard({ player, rank }: { player: PlayerRow; rank: 1 | 2 | 3 }) {
   const s = PODIUM[rank];
   return (
     <Link
-      href={`/players/${player.gamer_tag}`}
+      href={`/profile/${player.id}`}
       className={`flex-1 max-w-[220px] ${s.bg} border ${s.border} rounded-xl p-5 flex flex-col items-center gap-2 text-center hover:brightness-110 transition-all ${rank === 1 ? 'sm:scale-105' : 'sm:mb-4'}`}
     >
       <Medal className={`w-7 h-7 ${s.medal}`} />
-      <div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-        <span className="text-white font-black text-xl">{player.gamer_tag[0].toUpperCase()}</span>
+      <div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden">
+        {player.avatar_url
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={player.avatar_url} alt="" className="w-full h-full object-cover" />
+          : <span className="text-white font-black text-xl">{player.gamer_tag[0].toUpperCase()}</span>
+        }
       </div>
       <div>
         <p className={`font-bold text-base ${s.medal}`}>{player.gamer_tag}</p>
@@ -73,7 +78,7 @@ export default async function LeaderboardPage({
   const [{ data: rawResults }, { data: arcadeList }, { data: seasonRows }] = await Promise.all([
     serverSupabase
       .from('results')
-      .select('profile_id, is_winner, points_awarded, profiles(id, gamer_tag, full_name), tournaments(game_type, arcade_id)'),
+      .select('profile_id, is_winner, points_awarded, profiles(id, gamer_tag, full_name, avatar_url), tournaments(game_type, arcade_id)'),
     serverSupabase
       .from('arcades')
       .select('id, name, city')
@@ -103,6 +108,7 @@ export default async function LeaderboardPage({
     id: string;
     gamer_tag: string;
     full_name: string;
+    avatar_url: string | null;
     points: number;
     wins: number;
     played: number;
@@ -110,7 +116,7 @@ export default async function LeaderboardPage({
   }> = {};
 
   for (const result of filtered) {
-    const profile = result.profiles as unknown as { id: string; gamer_tag: string; full_name: string } | null;
+    const profile = result.profiles as unknown as { id: string; gamer_tag: string; full_name: string; avatar_url: string | null } | null;
     const tournament = result.tournaments as unknown as { game_type: string; arcade_id: string } | null;
     if (!profile || !tournament) continue;
 
@@ -120,6 +126,7 @@ export default async function LeaderboardPage({
         id: profile.id,
         gamer_tag: profile.gamer_tag,
         full_name: profile.full_name,
+        avatar_url: profile.avatar_url ?? null,
         points: 0,
         wins: 0,
         played: 0,
@@ -142,6 +149,7 @@ export default async function LeaderboardPage({
       id: p.id,
       gamer_tag: p.gamer_tag,
       full_name: p.full_name,
+      avatar_url: p.avatar_url,
       points: p.points,
       wins: p.wins,
       played: p.played,
@@ -228,7 +236,7 @@ export default async function LeaderboardPage({
               return (
                 <Link
                   key={player.id}
-                  href={`/players/${player.gamer_tag}`}
+                  href={`/profile/${player.id}`}
                   className="grid grid-cols-[48px_1fr] sm:grid-cols-[48px_1fr_120px_80px_60px_60px_90px] gap-4 px-5 py-4 border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/40 transition-colors items-center"
                 >
                   <span className={`font-display text-2xl leading-none ${rankColor}`}>
@@ -236,10 +244,12 @@ export default async function LeaderboardPage({
                   </span>
 
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center shrink-0">
-                      <span className="text-white font-black text-sm">
-                        {player.gamer_tag[0].toUpperCase()}
-                      </span>
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
+                      {player.avatar_url
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={player.avatar_url} alt="" className="w-full h-full object-cover" />
+                        : <span className="text-white font-black text-sm">{player.gamer_tag[0].toUpperCase()}</span>
+                      }
                     </div>
                     <div className="min-w-0">
                       <p className="text-white font-bold truncate">{player.gamer_tag}</p>

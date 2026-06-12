@@ -17,18 +17,18 @@ const GAME_COLOR: Record<string, string> = {
 };
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { id } = await params;
-  const { data } = await serverSupabase.from('tournaments').select('name').eq('id', id).single();
+  const { id: slug } = await params;
+  const { data } = await serverSupabase.from('tournaments').select('name').eq('slug', slug).single();
   return { title: data ? `${data.name} — Bracket` : 'Tournament Bracket' };
 }
 
 export default async function BracketPage({ params }: { params: Params }) {
-  const { id } = await params;
+  const { id: slug } = await params;
 
   const { data: tournament } = await serverSupabase
     .from('tournaments')
     .select('id, name, slug, game_type, format, status, max_players, is_qualifier')
-    .eq('id', id)
+    .eq('slug', slug)
     .single();
 
   if (!tournament) notFound();
@@ -37,13 +37,13 @@ export default async function BracketPage({ params }: { params: Params }) {
     serverSupabase
       .from('registrations')
       .select('profile_id, profiles(id, gamer_tag, full_name)')
-      .eq('tournament_id', id)
+      .eq('tournament_id', tournament.id)
       .neq('registration_status', 'cancelled')
       .order('registered_at', { ascending: true }),
     serverSupabase
       .from('results')
       .select('profile_id, placement, is_winner')
-      .eq('tournament_id', id)
+      .eq('tournament_id', tournament.id)
       .order('placement', { ascending: true }),
   ]);
 

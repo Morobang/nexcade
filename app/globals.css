@@ -1,27 +1,101 @@
 @import "tailwindcss";
 
+/* Enable dark: classes via .dark class on <html> (set by next-themes) */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* Brand colors — available as bg-fire, text-gold, border-cyan, etc. */
+  /* Brand colors */
   --color-fire: #ff4500;
   --color-gold: #f59e0b;
   --color-neon-green: #22c55e;
   --color-cyan: #22d3ee;
 
+  /* Semantic colors — reference the runtime CSS vars below.
+     Tailwind generates bg-page, text-fg, border-stroke, etc. */
+  --color-page:           var(--c-bg);
+  --color-surface:        var(--c-surface);
+  --color-elevated:       var(--c-elevated);
+  --color-stroke:         var(--c-border);
+  --color-stroke-subtle:  var(--c-border-subtle);
+  --color-fg:             var(--c-fg);
+  --color-fg-2:           var(--c-fg-2);
+  --color-fg-3:           var(--c-fg-3);
+
   /* Fonts */
   --font-display: var(--font-bebas), sans-serif;
-  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-sans:    var(--font-barlow), system-ui, sans-serif;
 }
 
+/* ── Dark theme (default) ──────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
+
+  --c-bg:             #09090b;   /* zinc-950 */
+  --c-surface:        #18181b;   /* zinc-900 */
+  --c-elevated:       #27272a;   /* zinc-800 */
+  --c-border:         #27272a;   /* zinc-800 */
+  --c-border-subtle:  #18181b;   /* zinc-900 */
+
+  --c-fg:   #f4f4f5;   /* zinc-100  — primary text   */
+  --c-fg-2: #a1a1aa;   /* zinc-400  — secondary text */
+  --c-fg-3: #71717a;   /* zinc-500  — muted text     */
 }
 
-body {
-  background-color: #09090b;
-  color: #f4f4f5;
+/* ── Light theme ───────────────────────────────────────────────────────────── */
+html.light {
+  color-scheme: light;
+
+  --c-bg:             #ffffff;
+  --c-surface:        #f4f4f5;   /* zinc-100 */
+  --c-elevated:       #e4e4e7;   /* zinc-200 */
+  --c-border:         #e4e4e7;   /* zinc-200 */
+  --c-border-subtle:  #f4f4f5;   /* zinc-100 */
+
+  --c-fg:   #09090b;   /* near black — primary text   */
+  --c-fg-2: #52525b;   /* zinc-600   — secondary text */
+  --c-fg-3: #71717a;   /* zinc-500   — muted text     */
+
+  /* Flip zinc scale so all existing bg-zinc-*, text-zinc-*, border-zinc-*
+     classes adapt without touching every component. */
+  --color-zinc-950: #ffffff;
+  --color-zinc-900: #f4f4f5;
+  --color-zinc-800: #e4e4e7;
+  --color-zinc-700: #d4d4d8;
+  --color-zinc-600: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-400: #52525b;
+  --color-zinc-300: #3f3f46;
+  --color-zinc-200: #27272a;
+  --color-zinc-100: #18181b;
+  --color-zinc-50:  #09090b;
 }
 
-/* Subtle noise grain overlay across the whole app */
+/* ── Semantic bg/border/text utilities — direct var() bypass ────────────────
+   Tailwind v4 wraps @theme var() references in color-mix() at compile time,
+   which silently fails and produces a transparent result. These unlayered
+   rules override Tailwind's generated classes and use the CSS vars directly.
+*/
+.bg-page     { background-color: var(--c-bg); }
+.bg-surface  { background-color: var(--c-surface); }
+.bg-elevated { background-color: var(--c-elevated); }
+
+.border-stroke        { border-color: var(--c-border); }
+.border-stroke-subtle { border-color: var(--c-border-subtle); }
+
+.text-fg   { color: var(--c-fg); }
+.text-fg-2 { color: var(--c-fg-2); }
+.text-fg-3 { color: var(--c-fg-3); }
+
+/* ── Global text-white fix ───────────────────────────────────────────────────
+   In light mode, text-white on neutral surfaces becomes dark.
+   Elements WITH a bg-* or from-* class (buttons, badges, gradient containers)
+   are excluded — their text stays white for contrast on the coloured background.
+*/
+html.light .text-white:not([class*=" bg-"]):not([class^="bg-"]):not([class*=" from-"]):not([class^="from-"]) {
+  color: var(--c-fg);
+}
+
+/* ── Noise grain — dark mode only ──────────────────────────────────────────── */
 body::before {
   content: '';
   position: fixed;
@@ -32,4 +106,8 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 200px 200px;
+}
+
+html.light body::before {
+  display: none;
 }

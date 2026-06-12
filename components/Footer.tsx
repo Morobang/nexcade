@@ -108,8 +108,8 @@ export function Footer() {
           <p className="text-zinc-500 text-sm">
             © 2026 NexCade. All rights reserved.
           </p>
-          <p className="text-zinc-500 text-sm">
-            Made with <Flame className="w-4 h-4 text-red-500 inline-block" /> by South Africa's fighting game community
+          <p className="text-zinc-500 text-sm flex items-center gap-1.5 flex-wrap justify-center sm:justify-end">
+            Made with <Flame className="w-4 h-4 text-red-500 shrink-0" /> by South Africa&apos;s fighting game community
           </p>
         </div>
       </div>

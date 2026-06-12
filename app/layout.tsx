@@ -3,6 +3,7 @@ import { Bebas_Neue, Barlow } from 'next/font/google';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { ToastProvider } from '@/components/ui/Toast';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 
 const bebasNeue = Bebas_Neue({
@@ -53,13 +54,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bebasNeue.variable} ${barlow.variable} antialiased`}>
-      <body className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
-        <ToastProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </ToastProvider>
+    <html lang="en" suppressHydrationWarning className={`${bebasNeue.variable} ${barlow.variable} antialiased`}>
+      <body className="min-h-screen bg-page text-fg flex flex-col">
+        <ThemeProvider>
+          <ToastProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

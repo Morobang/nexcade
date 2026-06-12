@@ -121,7 +121,7 @@ export default function PlatformAdminPage() {
     // Arcades with owner profile
     const { data: arcadeData } = await supabase
       .from('arcades')
-      .select('id, name, city, slug, is_active, created_at, owner_id, profiles(full_name, email)')
+      .select('id, name, city, slug, is_active, created_at, owner_id, profiles!owner_id(full_name, email)')
       .order('created_at', { ascending: false });
 
     // Tournaments

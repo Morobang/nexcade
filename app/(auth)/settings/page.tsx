@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -45,7 +45,7 @@ const NAV_SECTIONS: { id: Section; label: string; icon: React.ElementType }[] = 
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export default function SettingsPage() {
+function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sectionParam = searchParams.get('section') as Section | null;
@@ -587,4 +587,8 @@ function PlaceholderSection({ title }: { title: string }) {
       </div>
     </div>
   );
+}
+
+export default function Page() {
+  return <Suspense><SettingsPage /></Suspense>;
 }

@@ -159,79 +159,87 @@ export function Navbar() {
                   <div className="relative ml-1" ref={dropdownRef}>
                     <button
                       onClick={() => setDropdownOpen((o) => !o)}
-                      className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden hover:ring-2 hover:ring-red-500/50 transition-all"
                     >
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
-                        {profile.avatar_url
-                          ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
-                          : <span className="text-white font-black text-[10px]">{initials}</span>
-                        }
-                      </div>
-                      <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200 max-w-[90px] truncate">{profile.gamer_tag}</span>
-                      <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                      {profile.avatar_url
+                        ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                        : <span className="text-white font-black text-xs">{initials}</span>
+                      }
                     </button>
 
                     {dropdownOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden z-50">
-                        {/* Profile header */}
-                        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="absolute right-0 top-full mt-3 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden z-50">
+
+                        {/* Profile header — big avatar + name + email */}
+                        <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shrink-0 overflow-hidden">
                             {profile.avatar_url
                               ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
-                              : <span className="text-white font-black text-sm">{initials}</span>
+                              : <span className="text-white font-black text-xl">{initials}</span>
                             }
                           </div>
                           <div className="min-w-0">
-                            <p className="text-zinc-900 dark:text-white font-bold text-sm truncate">{profile.gamer_tag}</p>
+                            <p className="text-zinc-900 dark:text-white font-bold text-base truncate">{profile.gamer_tag}</p>
                             <p className="text-zinc-500 text-xs truncate">{profile.full_name}</p>
+                            {session?.user.email && (
+                              <p className="text-zinc-400 text-xs truncate mt-0.5">{session.user.email}</p>
+                            )}
                           </div>
                         </div>
 
+                        {/* Primary links */}
                         <div className="py-1">
                           <Link
                             href="/dashboard"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                           >
-                            <LayoutDashboard className="w-4 h-4" />
+                            <LayoutDashboard className="w-4 h-4 shrink-0" />
                             My Dashboard
                           </Link>
                           <Link
                             href="/dashboard"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                           >
-                            <Settings className="w-4 h-4" />
-                            Settings
+                            <Settings className="w-4 h-4 shrink-0" />
+                            Account settings
                           </Link>
-                          {isArcadeOwner && (
-                            <Link
-                              href="/admin"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-yellow-600 dark:text-yellow-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                              <Building2 className="w-4 h-4" />
-                              Admin panel
-                            </Link>
-                          )}
-                          {isPlatformAdmin && (
-                            <Link
-                              href="/platform"
-                              onClick={() => setDropdownOpen(false)}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                              <ShieldCheck className="w-4 h-4" />
-                              Platform portal
-                            </Link>
-                          )}
                         </div>
 
+                        {/* Role-based links */}
+                        {(isArcadeOwner || isPlatformAdmin) && (
+                          <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
+                            {isArcadeOwner && (
+                              <Link
+                                href="/admin"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-3 px-5 py-3 text-sm text-yellow-600 dark:text-yellow-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                              >
+                                <Building2 className="w-4 h-4 shrink-0" />
+                                Arcade admin panel
+                              </Link>
+                            )}
+                            {isPlatformAdmin && (
+                              <Link
+                                href="/platform"
+                                onClick={() => setDropdownOpen(false)}
+                                className="flex items-center gap-3 px-5 py-3 text-sm text-red-500 dark:text-red-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                              >
+                                <ShieldCheck className="w-4 h-4 shrink-0" />
+                                Platform portal
+                              </Link>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Sign out */}
                         <div className="border-t border-zinc-200 dark:border-zinc-800 py-1">
                           <button
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors w-full text-left"
+                            className="flex items-center gap-3 px-5 py-3 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors w-full text-left"
                           >
-                            <LogOut className="w-4 h-4" />
+                            <LogOut className="w-4 h-4 shrink-0" />
                             Log out
                           </button>
                         </div>

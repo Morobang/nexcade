@@ -95,6 +95,30 @@ html.light .text-white:not([class*=" bg-"]):not([class^="bg-"]):not([class*=" fr
   color: var(--c-fg);
 }
 
+/* ── Leaflet map popup — theme-aware ────────────────────────────────────────
+   Leaflet's default .leaflet-popup-content-wrapper has a hardcoded white
+   background. Override with CSS vars so it matches the current theme.
+*/
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: var(--c-surface) !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35) !important;
+  color: var(--c-fg) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--c-fg-3) !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: var(--c-fg) !important;
+}
+
 /* ── Noise grain — dark mode only ──────────────────────────────────────────── */
 body::before {
   content: '';

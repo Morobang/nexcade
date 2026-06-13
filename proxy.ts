@@ -23,8 +23,10 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh the session — keeps the token alive and prevents unexpected sign-outs.
-  await supabase.auth.getUser();
+  // Refresh the session cookie without a remote network call.
+  // getSession() reads the JWT locally; getUser() would hit Supabase's servers
+  // on every request and adds 1-2s of latency per page load.
+  await supabase.auth.getSession();
 
   return supabaseResponse;
 }

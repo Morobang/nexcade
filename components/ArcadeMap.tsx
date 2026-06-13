@@ -1,10 +1,11 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 import { formatDate } from '@/lib/utils';
 
 export interface ArcadeMapItem {
@@ -49,6 +50,12 @@ interface Props {
 
 export default function ArcadeMap({ arcades, nearestId }: Props) {
   const nearest = arcades.find((a) => a.id === nearestId);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== 'light';
+
+  const tileUrl = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
   return (
     <MapContainer
@@ -58,8 +65,9 @@ export default function ArcadeMap({ arcades, nearestId }: Props) {
       scrollWheelZoom={false}
     >
       <TileLayer
+        key={tileUrl}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url={tileUrl}
       />
 
       {nearest && <PanTo lat={nearest.latitude} lng={nearest.longitude} />}
@@ -71,18 +79,18 @@ export default function ArcadeMap({ arcades, nearestId }: Props) {
           icon={createPin(arcade.id === nearestId)}
         >
           <Popup className="nexcade-popup">
-            <div className="bg-zinc-900 rounded-lg p-3 min-w-[180px] text-sm">
-              <p className="font-bold text-white text-base mb-0.5">{arcade.name}</p>
-              <p className="text-zinc-400 text-xs mb-2">{arcade.city}</p>
+            <div className="bg-surface rounded-lg p-3 min-w-[180px] text-sm">
+              <p className="font-bold text-fg text-base mb-0.5">{arcade.name}</p>
+              <p className="text-fg-3 text-xs mb-2">{arcade.city}</p>
               {arcade.games_supported.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-2">
                   {arcade.games_supported.map((g) => (
-                    <span key={g} className="px-1.5 py-0.5 bg-zinc-800 rounded text-zinc-300 text-xs">{g}</span>
+                    <span key={g} className="px-1.5 py-0.5 bg-elevated rounded text-fg-2 text-xs">{g}</span>
                   ))}
                 </div>
               )}
               {arcade.nextTournament && (
-                <p className="text-zinc-500 text-xs mb-2">
+                <p className="text-fg-3 text-xs mb-2">
                   Next: {formatDate(arcade.nextTournament.start_at, 'short')}
                 </p>
               )}

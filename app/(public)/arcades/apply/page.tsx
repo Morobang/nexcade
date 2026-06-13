@@ -1,13 +1,25 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { Building2 } from 'lucide-react';
 import { ApplicationForm } from './ApplicationForm';
+import { getServerAuth } from '@/lib/auth-server';
 
 export const metadata: Metadata = {
   title: 'Register your arcade — NexCade',
   description: 'Apply to list your gaming arcade on NexCade and start running tournaments.',
 };
 
-export default function ApplyPage() {
+export default async function ApplyPage() {
+  const { supabase, user } = await getServerAuth();
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (profile?.role === 'arcade_owner') redirect('/admin');
+    if (profile?.role === 'platform_admin') redirect('/platform');
+  }
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 

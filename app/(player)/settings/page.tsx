@@ -8,7 +8,7 @@ import { ArcadeCombobox } from '@/components/ArcadeCombobox';
 import {
   User, Camera, Shield, Bell, Lock, Trash2, Loader2, AlertCircle,
   CheckCircle2, Upload, Globe, AtSign, Play, Phone,
-  MapPin, FileText, Tag, Gamepad2, ExternalLink,
+  MapPin, FileText, Tag, Gamepad2, ExternalLink, ArrowLeft,
 } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -86,6 +86,13 @@ function SettingsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm transition-colors mb-8"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to dashboard
+      </Link>
       <div className="flex flex-col lg:flex-row gap-8">
 
         {/* ── Left sidebar ── */}

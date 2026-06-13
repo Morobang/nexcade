@@ -134,11 +134,11 @@ export function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-1">
 
-            {/* Theme toggle — desktop */}
+            {/* Theme toggle */}
             {mounted && (
               <button
                 onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
+                className="flex items-center justify-center w-9 h-9 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
                 aria-label="Toggle theme"
               >
                 {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

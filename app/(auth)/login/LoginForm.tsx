@@ -37,21 +37,42 @@ export function LoginForm() {
       return;
     }
 
+    // Explicit ?next= param always takes priority (e.g. coming from a protected page)
     const next = searchParams.get('next');
     if (next && next.startsWith('/')) {
       router.push(next);
       return;
     }
 
+    // Pending tournament registration also takes priority
     const pendingId =
       typeof window !== 'undefined' ? localStorage.getItem('pendingTourneyId') : null;
-
     if (pendingId) {
       localStorage.removeItem('pendingTourneyId');
       router.push(`/register/${pendingId}`);
-    } else {
-      router.push('/dashboard');
+      return;
     }
+
+    // Default redirect based on role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role === 'arcade_owner') {
+        router.push('/admin');
+        return;
+      }
+      if (profile?.role === 'platform_admin') {
+        router.push('/platform');
+        return;
+      }
+    }
+
+    router.push('/dashboard');
   }
 
   return (

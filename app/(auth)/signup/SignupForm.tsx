@@ -389,9 +389,9 @@ export function SignupForm({ arcades }: Props) {
               className="mt-0.5 w-4 h-4 rounded border-zinc-600 bg-zinc-800 accent-red-600 shrink-0" />
             <span className="text-sm text-zinc-400 leading-snug">
               I agree to the{' '}
-              <Link href="/terms" className="text-red-400 hover:text-red-300 underline" target="_blank">Terms of Service</Link>{' '}
+              <Link href="/legal/terms" className="text-red-400 hover:text-red-300 underline" target="_blank">Terms of Service</Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-red-400 hover:text-red-300 underline" target="_blank">Privacy Policy</Link>
+              <Link href="/legal/privacy" className="text-red-400 hover:text-red-300 underline" target="_blank">Privacy Policy</Link>
             </span>
           </label>
           {personalErrors.terms && (

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -7,26 +7,42 @@ import { useTheme } from 'next-themes';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import {
-  LogOut, LayoutDashboard, ShieldCheck,
-  Building2, Bell, Sun, Moon, Settings,
-  Trophy, History, MessageSquare,
+  LogOut, LayoutDashboard, Building2, Bell,
+  Sun, Moon, Settings, Trophy, History,
+  ClipboardList, Banknote, Radio, Users, User, Home,
 } from 'lucide-react';
 import { SearchTrigger, GlobalSearch } from '@/components/GlobalSearch';
 
 const GUEST_NAV = [
   { href: '/tournaments', label: 'Tournaments' },
-  { href: '/arcades',     label: 'Arcades'      },
-  { href: '/leaderboard', label: 'Leaderboard'  },
-  { href: '/live',        label: 'Live'          },
-  { href: '/news',        label: 'News'          },
+  { href: '/arcades',     label: 'Arcades'     },
+  { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/live',        label: 'Live'        },
+  { href: '/news',        label: 'News'        },
 ];
 
-const AUTH_NAV = [
-  { href: '/dashboard',   label: 'Dashboard'    },
-  { href: '/tournaments', label: 'Tournaments'  },
-  { href: '/arcades',     label: 'Arcades'      },
-  { href: '/leaderboard', label: 'Leaderboard'  },
-  { href: '/live',        label: 'Live'          },
+const PLAYER_NAV = [
+  { href: '/dashboard',   label: 'Dashboard'   },
+  { href: '/tournaments', label: 'Tournaments' },
+  { href: '/leaderboard', label: 'Leaderboard' },
+  { href: '/live',        label: 'Live'        },
+  { href: '/my-arcade',   label: 'My Arcade'   },
+];
+
+const ARCADE_NAV = [
+  { href: '/admin',               label: 'Overview'      },
+  { href: '/admin/tournaments',   label: 'Tournaments'   },
+  { href: '/admin/registrations', label: 'Registrations' },
+  { href: '/admin/revenue',       label: 'Revenue'       },
+  { href: '/admin/stream',        label: 'Stream'        },
+];
+
+const PLATFORM_NAV = [
+  { href: '/platform',              label: 'Overview'     },
+  { href: '/platform/arcades',      label: 'Arcades'      },
+  { href: '/platform/applications', label: 'Applications' },
+  { href: '/platform/users',        label: 'Users'        },
+  { href: '/platform/seasons',      label: 'Seasons'      },
 ];
 
 type UserProfile = {
@@ -99,7 +115,21 @@ export function Navbar() {
   const isArcadeOwner = profile?.role === 'arcade_owner';
   const isPlatformAdmin = profile?.role === 'platform_admin';
   const isDark = !mounted || resolvedTheme !== 'light';
-  const navLinks = session ? AUTH_NAV : GUEST_NAV;
+
+  const navLinks = !session
+    ? GUEST_NAV
+    : isPlatformAdmin
+    ? PLATFORM_NAV
+    : isArcadeOwner
+    ? ARCADE_NAV
+    : PLAYER_NAV;
+
+  function isActive(href: string) {
+    if (href === '/admin' || href === '/platform') return pathname === href;
+    return pathname === href || pathname.startsWith(href + '/');
+  }
+
+  const close = () => setDropdownOpen(false);
 
   return (
     <>
@@ -121,7 +151,9 @@ export function Navbar() {
               <Link
                 key={href}
                 href={href}
-                className="text-fg-2 hover:text-fg transition-colors font-medium text-sm whitespace-nowrap"
+                className={`font-medium text-sm whitespace-nowrap transition-colors ${
+                  isActive(href) ? 'text-fg' : 'text-fg-2 hover:text-fg'
+                }`}
               >
                 {label}
               </Link>
@@ -149,35 +181,16 @@ export function Navbar() {
               session && profile ? (
                 <div className="flex items-center gap-1">
 
-                  {/* Role badges — desktop only */}
-                  {isArcadeOwner && (
-                    <Link
-                      href="/admin"
-                      className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/20 text-xs font-bold transition-colors"
-                    >
-                      <Building2 className="w-3.5 h-3.5" />
-                      Admin
-                    </Link>
-                  )}
-                  {isPlatformAdmin && (
-                    <Link
-                      href="/platform"
-                      className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 text-xs font-bold transition-colors"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      Platform
-                    </Link>
-                  )}
-
                   {/* Notification bell */}
-                  <button
+                  <Link
+                    href="/notifications"
                     className="flex items-center justify-center w-9 h-9 rounded-lg text-fg-3 hover:text-fg hover:bg-elevated transition-colors"
                     aria-label="Notifications"
                   >
                     <Bell className="w-4 h-4" />
-                  </button>
+                  </Link>
 
-                  {/* Avatar dropdown — visible on all sizes */}
+                  {/* Avatar dropdown */}
                   <div className="relative ml-1" ref={dropdownRef}>
                     <button
                       onClick={() => setDropdownOpen((o) => !o)}
@@ -209,37 +222,47 @@ export function Navbar() {
                           </div>
                         </div>
 
-                        {/* My activity */}
-                        <div className="py-1">
-                          <DropItem href="/dashboard" icon={LayoutDashboard} label="My Dashboard" onClick={() => setDropdownOpen(false)} />
-                          <DropItem href="/dashboard?tab=tournaments" icon={Trophy} label="My Tournaments" onClick={() => setDropdownOpen(false)} />
-                          <DropItem href="/dashboard?tab=history" icon={History} label="Match History" onClick={() => setDropdownOpen(false)} />
-                        </div>
-
-                        {/* Social */}
-                        <div className="border-t border-stroke py-1">
-                          <DropItemBadge href="/dashboard" icon={Bell} label="Notifications" badge={0} onClick={() => setDropdownOpen(false)} />
-                          <DropItemBadge href="/dashboard" icon={MessageSquare} label="Messages" badge={0} onClick={() => setDropdownOpen(false)} />
-                        </div>
-
-                        {/* Account */}
-                        <div className="border-t border-stroke py-1">
-                          <DropItem href="/settings" icon={Settings} label="Account settings" onClick={() => setDropdownOpen(false)} />
-                        </div>
-
-                        {/* Role-based */}
-                        {(isArcadeOwner || isPlatformAdmin) && (
-                          <div className="border-t border-stroke py-1">
-                            {isArcadeOwner && (
-                              <DropItem href="/admin" icon={Building2} label="Arcade admin panel" onClick={() => setDropdownOpen(false)} className="text-yellow-600 dark:text-yellow-400" />
-                            )}
-                            {isPlatformAdmin && (
-                              <DropItem href="/platform" icon={ShieldCheck} label="Platform portal" onClick={() => setDropdownOpen(false)} className="text-red-500" />
-                            )}
-                          </div>
+                        {/* Role-specific menu items */}
+                        {isPlatformAdmin ? (
+                          <>
+                            <div className="py-1">
+                              <DropItem href="/platform"              icon={LayoutDashboard} label="Platform Overview"  onClick={close} />
+                              <DropItem href="/platform/arcades"      icon={Building2}       label="All Arcades"        onClick={close} />
+                              <DropItem href="/platform/applications" icon={ClipboardList}   label="Applications"       onClick={close} />
+                              <DropItem href="/platform/users"        icon={Users}           label="All Users"          onClick={close} />
+                              <DropItem href="/platform/revenue"      icon={Banknote}        label="Revenue"            onClick={close} />
+                            </div>
+                          </>
+                        ) : isArcadeOwner ? (
+                          <>
+                            <div className="py-1">
+                              <DropItem href="/admin"               icon={LayoutDashboard} label="Admin Overview"  onClick={close} />
+                              <DropItem href="/admin/tournaments"   icon={Trophy}          label="My Tournaments"  onClick={close} />
+                              <DropItem href="/admin/registrations" icon={ClipboardList}   label="Registrations"   onClick={close} />
+                              <DropItem href="/admin/revenue"       icon={Banknote}        label="Revenue"         onClick={close} />
+                              <DropItem href="/admin/stream"        icon={Radio}           label="Stream"          onClick={close} />
+                            </div>
+                            <div className="border-t border-stroke py-1">
+                              <DropItem href="/admin/settings" icon={Settings} label="Arcade Settings" onClick={close} />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="py-1">
+                              <DropItem href="/dashboard"                   icon={LayoutDashboard} label="My Dashboard"    onClick={close} />
+                              <DropItem href="/dashboard?tab=tournaments"   icon={Trophy}          label="My Tournaments"  onClick={close} />
+                              <DropItem href="/dashboard?tab=history"       icon={History}         label="Match History"   onClick={close} />
+                              <DropItem href={`/profile/${session.user.id}`} icon={User}           label="My Profile"      onClick={close} />
+                              <DropItem href="/my-arcade"                   icon={Home}            label="My Arcade"       onClick={close} />
+                            </div>
+                            <div className="border-t border-stroke py-1">
+                              <DropItem href="/notifications" icon={Bell}     label="Notifications" onClick={close} />
+                              <DropItem href="/settings"      icon={Settings} label="Settings"       onClick={close} />
+                            </div>
+                          </>
                         )}
 
-                        {/* Sign out */}
+                        {/* Sign out — always last */}
                         <div className="border-t border-stroke py-1">
                           <button
                             onClick={handleSignOut}
@@ -249,6 +272,7 @@ export function Navbar() {
                             Log out
                           </button>
                         </div>
+
                       </div>
                     )}
                   </div>
@@ -281,7 +305,7 @@ export function Navbar() {
   );
 }
 
-// ── Dropdown helpers ──────────────────────────────────────────────────────────
+// ── Dropdown helper ───────────────────────────────────────────────────────────
 
 function DropItem({
   href, icon: Icon, label, onClick, className = '',
@@ -302,32 +326,6 @@ function DropItem({
     >
       <Icon className="w-4 h-4 shrink-0" />
       {label}
-    </Link>
-  );
-}
-
-function DropItemBadge({
-  href, icon: Icon, label, badge, onClick,
-}: {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  badge: number;
-  onClick: () => void;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="flex items-center gap-3 px-5 py-3 text-sm text-fg-2 hover:text-fg hover:bg-elevated transition-colors"
-    >
-      <Icon className="w-4 h-4 shrink-0" />
-      <span className="flex-1">{label}</span>
-      {badge > 0 && (
-        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
-          {badge}
-        </span>
-      )}
     </Link>
   );
 }

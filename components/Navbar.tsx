@@ -22,11 +22,11 @@ const GUEST_NAV = [
 ];
 
 const PLAYER_NAV = [
-  { href: '/dashboard',   label: 'Dashboard'   },
-  { href: '/tournaments', label: 'Tournaments' },
-  { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/live',        label: 'Live'        },
-  { href: '/my-arcade',   label: 'My Arcade'   },
+  { href: '/dashboard',      label: 'Dashboard'   },
+  { href: '/my-tournaments', label: 'Tournaments' },
+  { href: '/my-arcade',      label: 'My Arcade'   },
+  { href: '/live',           label: 'Live'        },
+  { href: '/leaderboard',    label: 'Leaderboard' },
 ];
 
 const ARCADE_NAV = [
@@ -249,11 +249,10 @@ export function Navbar() {
                         ) : (
                           <>
                             <div className="py-1">
-                              <DropItem href="/dashboard"                   icon={LayoutDashboard} label="My Dashboard"    onClick={close} />
-                              <DropItem href="/dashboard?tab=tournaments"   icon={Trophy}          label="My Tournaments"  onClick={close} />
-                              <DropItem href="/dashboard?tab=history"       icon={History}         label="Match History"   onClick={close} />
-                              <DropItem href={`/profile/${session.user.id}`} icon={User}           label="My Profile"      onClick={close} />
-                              <DropItem href="/my-arcade"                   icon={Home}            label="My Arcade"       onClick={close} />
+                              <DropItem href="/dashboard"                    icon={LayoutDashboard} label="My Dashboard"   onClick={close} />
+                              <DropItem href="/my-tournaments"               icon={Trophy}          label="My Tournaments" onClick={close} />
+                              <DropItem href="/my-arcade"                    icon={Home}            label="My Arcade"      onClick={close} />
+                              <DropItem href={`/profile/${session.user.id}`} icon={User}            label="My Profile"     onClick={close} />
                             </div>
                             <div className="border-t border-stroke py-1">
                               <DropItem href="/notifications" icon={Bell}     label="Notifications" onClick={close} />

@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getServerAuth } from '@/lib/auth-server';
+import { Navbar } from '@/components/Navbar';
 
-export default async function ArcadeAdminLayout({ children }: { children: React.ReactNode }) {
+export default async function ArcadeLayout({ children }: { children: React.ReactNode }) {
   const { supabase, user } = await getServerAuth();
   if (!user) redirect('/login');
 
@@ -15,5 +16,10 @@ export default async function ArcadeAdminLayout({ children }: { children: React.
     redirect('/dashboard');
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <Navbar />
+      <main className="flex-1">{children}</main>
+    </>
+  );
 }

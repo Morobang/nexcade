@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Crown, LayoutDashboard, ClipboardList, Building2,
-  Users, Trophy, Banknote,
+  Users, Trophy, Banknote, Calendar,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -16,6 +16,7 @@ const NAV = [
   { href: '/platform/users',        label: 'Users',         icon: Users           },
   { href: '/platform/revenue',      label: 'Revenue',       icon: Banknote        },
   { href: '/platform/tournaments',  label: 'Tournaments',   icon: Trophy          },
+  { href: '/platform/seasons',      label: 'Seasons',       icon: Calendar        },
 ];
 
 export function PlatformShell({ children }: { children: React.ReactNode }) {
